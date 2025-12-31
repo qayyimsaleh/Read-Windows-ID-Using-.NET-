@@ -110,12 +110,18 @@ namespace WindowsAuthDemo
                         }
                         else
                         {
-                            // User doesn't exist, insert as normal user (admin = 0)
-                            string insertUserQuery = "INSERT INTO hardware_users (win_id, active, admin) VALUES (@win_id, 1, 0)";
+                            // User doesn't exist, insert as normal user
+                            // Try to extract email from Windows ID (domain\username -> username@company.com)
+                            string email = windowsUser.Contains("\\")
+                                ? windowsUser.Split('\\')[1] + "@yourcompany.com"
+                                : windowsUser + "@yourcompany.com";
+
+                            string insertUserQuery = "INSERT INTO hardware_users (win_id, active, admin, email) VALUES (@win_id, 1, 0, @email)";
 
                             using (SqlCommand insertCommand = new SqlCommand(insertUserQuery, connection))
                             {
                                 insertCommand.Parameters.AddWithValue("@win_id", windowsUser);
+                                insertCommand.Parameters.AddWithValue("@email", email);
                                 insertCommand.ExecuteNonQuery();
                             }
 

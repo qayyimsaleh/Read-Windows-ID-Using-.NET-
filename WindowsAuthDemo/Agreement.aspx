@@ -359,6 +359,77 @@
             color: #721c24;
         }
 
+        .required::after {
+            content: " *";
+            color: #dc3545;
+        }
+
+        .info-text {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        /* Readonly style for view mode */
+        .readonly-control {
+            background-color: #f8f9fa !important;
+            border-color: #dee2e6 !important;
+            color: #495057 !important;
+            cursor: not-allowed !important;
+        }
+
+        /* Add this to your existing CSS */
+        .view-mode .form-select.readonly-control {
+            background-color: #f8f9fa !important;
+            border-color: #dee2e6 !important;
+            color: #495057 !important;
+            cursor: not-allowed !important;
+            pointer-events: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        /* Optional: Add display text for view mode */
+        .email-display {
+            display: none;
+            color: #495057;
+            font-weight: 500;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+
+        .view-mode .email-display {
+            display: block;
+        }
+
+        /* Validation error styles */
+        .validation-error {
+            color: #dc3545;
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: block;
+        }
+
+        /* New styles for other model panel */
+        .other-model-panel {
+            background-color: #f8f9ff;
+            border: 1px solid #d0d7ff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 10px;
+        }
+
+        .other-model-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -395,26 +466,10 @@
                 min-width: auto;
                 margin-bottom: 4px;
             }
-        }
-
-        .required::after {
-            content: " *";
-            color: #dc3545;
-        }
-
-        .info-text {
-            font-size: 0.85rem;
-            color: #666;
-            margin-top: 5px;
-            font-style: italic;
-        }
-
-        /* Readonly style for view mode */
-        .readonly-control {
-            background-color: #f8f9fa !important;
-            border-color: #dee2e6 !important;
-            color: #495057 !important;
-            cursor: not-allowed !important;
+            
+            .other-model-fields {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -422,8 +477,11 @@
     <form id="form1" runat="server">
         <div class="container">
             <div class="header">
+                <a href="Default.aspx" class="back-button">
+                    <i class="fas fa-arrow-left"></i> Back to Panel
+                </a>
                 <a href="ExistingAgreements.aspx" class="back-button">
-                    <i class="fas fa-arrow-left"></i> Back to Agreements
+                    <i class="fas fa-arrow-left"></i> Go to Agreements List
                 </a>
                 <h1>
                     <i class="fas fa-file-contract"></i>
@@ -470,9 +528,48 @@
                     
                     <div class="form-group">
                         <label class="form-label required">Laptop/PC Model</label>
-                        <asp:DropDownList ID="ddlModel" runat="server" CssClass="form-select" required>
+                        <asp:DropDownList ID="ddlModel" runat="server" CssClass="form-select" 
+                            required AutoPostBack="true" OnSelectedIndexChanged="ddlModel_SelectedIndexChanged">
                             <asp:ListItem Value="">-- Select Model --</asp:ListItem>
                         </asp:DropDownList>
+                        
+                        <!-- Panel for "Other" model input -->
+                        <asp:Panel ID="pnlOtherModel" runat="server" Visible="false" CssClass="other-model-panel">
+                            <h4 style="color: #667eea; margin-bottom: 15px;">
+                                <i class="fas fa-plus-circle"></i> Add New Model
+                            </h4>
+                            <div class="other-model-fields">
+                                <div>
+                                    <label class="form-label required">Model Name</label>
+                                    <asp:TextBox ID="txtOtherModel" runat="server" CssClass="form-control" 
+                                        placeholder="Enter new model name"></asp:TextBox>
+                                    <asp:RequiredFieldValidator ID="rfvOtherModel" runat="server" 
+                                        ControlToValidate="txtOtherModel" ErrorMessage="Please enter model name"
+                                        Display="Dynamic" ForeColor="Red" Enabled="false">
+                                    </asp:RequiredFieldValidator>
+                                </div>
+                                
+                                <div>
+                                    <label class="form-label required">Device Type</label>
+                                    <asp:DropDownList ID="ddlDeviceType" runat="server" CssClass="form-select">
+                                        <asp:ListItem Value="">-- Select Type --</asp:ListItem>
+                                        <asp:ListItem Value="Laptop">Laptop</asp:ListItem>
+                                        <asp:ListItem Value="Desktop">Desktop</asp:ListItem>
+                                        <asp:ListItem Value="All-in-One">All-in-One PC</asp:ListItem>
+                                        <asp:ListItem Value="Workstation">Workstation</asp:ListItem>
+                                        <asp:ListItem Value="Tablet">Tablet</asp:ListItem>
+                                        <asp:ListItem Value="Other">Other</asp:ListItem>
+                                    </asp:DropDownList>
+                                    <asp:RequiredFieldValidator ID="rfvDeviceType" runat="server" 
+                                        ControlToValidate="ddlDeviceType" InitialValue=""
+                                        ErrorMessage="Please select device type"
+                                        Display="Dynamic" ForeColor="Red" Enabled="false">
+                                    </asp:RequiredFieldValidator>
+                                </div>
+                            </div>
+                            <small class="info-text">This model will be added to the database for future use</small>
+                        </asp:Panel>
+                        
                         <asp:Label ID="lblModelDisplay" runat="server" CssClass="checkbox-display"></asp:Label>
                     </div>
                     
@@ -594,6 +691,38 @@
                                 <asp:Label ID="lblInactiveDisplay" runat="server" CssClass="radio-display"></asp:Label>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Employee Information section -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-user"></i>
+                        Employee Information
+                    </h2>
+    
+                    <div class="form-group">
+                        <label class="form-label required">Employee Email</label>
+                        <asp:DropDownList ID="ddlEmployeeEmail" runat="server" CssClass="form-select" required>
+                            <asp:ListItem Value="">-- Select Employee Email --</asp:ListItem>
+                        </asp:DropDownList>
+                        <asp:RequiredFieldValidator ID="rfvEmployeeEmail" runat="server" 
+                            ControlToValidate="ddlEmployeeEmail" InitialValue=""
+                            ErrorMessage="Please select an employee email" 
+                            Display="Dynamic" ForeColor="Red">
+                        </asp:RequiredFieldValidator>
+                    </div>
+    
+                    <div class="form-group">
+                        <label class="form-label required">Employee's HOD Email</label>
+                        <asp:DropDownList ID="ddlHODEmail" runat="server" CssClass="form-select" required>
+                            <asp:ListItem Value="">-- Select HOD Email --</asp:ListItem>
+                        </asp:DropDownList>
+                        <asp:RequiredFieldValidator ID="rfvHODEmail" runat="server" 
+                            ControlToValidate="ddlHODEmail" InitialValue=""
+                            ErrorMessage="Please select an HOD email" 
+                            Display="Dynamic" ForeColor="Red">
+                        </asp:RequiredFieldValidator>
                     </div>
                 </div>
 
