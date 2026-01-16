@@ -20,6 +20,11 @@ namespace WindowsAuthDemo
         {
             if (!IsPostBack)
             {
+                // Add this line to populate the sidebar user name
+                lblUserName.Text = User.Identity.Name;
+
+                // Add this line to set the status label in the info bar
+                lblCurrentStatus.Text = currentStatus;
                 // Check if user is admin
                 if (Session["IsAdmin"] == null || !(bool)Session["IsAdmin"])
                 {
@@ -485,10 +490,7 @@ namespace WindowsAuthDemo
                                     {
                                         ddlModel.SelectedValue = modelId;
                                     }
-                                    // Display text for view mode
-                                    string modelName = reader["model"].ToString();
-                                    string modelType = reader["type"].ToString();
-                                    lblModelDisplay.Text = $"{modelName} ({modelType})";
+                                    // REMOVED: lblModelDisplay.Text reference
                                 }
 
                                 txtSerialNumber.Text = reader["serial_number"].ToString();
@@ -539,26 +541,26 @@ namespace WindowsAuthDemo
                                 chkMouse.Checked = hasMouse;
                                 chkVGAConverter.Checked = hasVGAConverter;
 
-                                // Set display text for checkboxes
-                                lblCarryBagDisplay.Text = hasCarryBag ? "Yes" : "No";
-                                lblPowerAdapterDisplay.Text = hasPowerAdapter ? "Yes" : "No";
-                                lblMouseDisplay.Text = hasMouse ? "Yes" : "No";
-                                lblVGAConverterDisplay.Text = hasVGAConverter ? "Yes" : "No";
+                                // REMOVED: All display label references
+                                // lblCarryBagDisplay.Text = hasCarryBag ? "Yes" : "No";
+                                // lblPowerAdapterDisplay.Text = hasPowerAdapter ? "Yes" : "No";
+                                // lblMouseDisplay.Text = hasMouse ? "Yes" : "No";
+                                // lblVGAConverterDisplay.Text = hasVGAConverter ? "Yes" : "No";
 
                                 string mouseType = reader["mouse_type"]?.ToString();
                                 rbWired.Checked = (mouseType == "Wired");
                                 rbWireless.Checked = (mouseType == "Wireless");
 
-                                // Set display text for mouse type
-                                if (hasMouse)
-                                {
-                                    lblMouseTypeDisplay.Text = mouseType == "Wired" ? "Wired" : "Wireless";
-                                    lblWirelessDisplay.Text = mouseType == "Wireless" ? "Wireless" : "";
-                                }
-                                else
-                                {
-                                    lblMouseTypeDisplay.Text = "Not Selected";
-                                }
+                                // REMOVED: Mouse type display references
+                                // if (hasMouse)
+                                // {
+                                //     lblMouseTypeDisplay.Text = mouseType == "Wired" ? "Wired" : "Wireless";
+                                //     lblWirelessDisplay.Text = mouseType == "Wireless" ? "Wireless" : "";
+                                // }
+                                // else
+                                // {
+                                //     lblMouseTypeDisplay.Text = "Not Selected";
+                                // }
 
                                 txtOtherAccessories.Text = reader["other_accessories"]?.ToString();
 
@@ -566,7 +568,7 @@ namespace WindowsAuthDemo
                                 txtITStaff.Text = reader["it_staff_win_id"].ToString();
                                 txtDateIssue.Text = Convert.ToDateTime(reader["issue_date"]).ToString("dd/MM/yyyy");
 
-                                // Load remarks - find control if needed
+                                // Load remarks
                                 TextBox txtRemarksControl = (TextBox)FindControl("txtRemarks");
                                 if (txtRemarksControl != null)
                                 {
@@ -580,15 +582,15 @@ namespace WindowsAuthDemo
                                     rbActive.Checked = isActive;
                                     rbInactive.Checked = !isActive;
 
-                                    // Find display labels
-                                    Label lblStatusDisplayControl = (Label)FindControl("lblStatusDisplay");
-                                    Label lblInactiveDisplayControl = (Label)FindControl("lblInactiveDisplay");
-
-                                    if (lblStatusDisplayControl != null && lblInactiveDisplayControl != null)
-                                    {
-                                        lblStatusDisplayControl.Text = isActive ? "Active" : "";
-                                        lblInactiveDisplayControl.Text = !isActive ? "Inactive" : "";
-                                    }
+                                    // REMOVED: Display label references
+                                    // Label lblStatusDisplayControl = (Label)FindControl("lblStatusDisplay");
+                                    // Label lblInactiveDisplayControl = (Label)FindControl("lblInactiveDisplay");
+                                    // 
+                                    // if (lblStatusDisplayControl != null && lblInactiveDisplayControl != null)
+                                    // {
+                                    //     lblStatusDisplayControl.Text = isActive ? "Active" : "";
+                                    //     lblInactiveDisplayControl.Text = !isActive ? "Inactive" : "";
+                                    // }
                                 }
                             }
                         }
@@ -1091,7 +1093,7 @@ namespace WindowsAuthDemo
 
                 // Create email message
                 MailMessage mail = new MailMessage();
-                mail.From = new MailAddress("hardware_agreement@yourcompany.com", "Hardware Agreement System");
+                mail.From = new MailAddress("hardware_agreement@ioioleo.com", "Hardware Agreement System");
                 mail.To.Add(employeeEmail);
                 mail.CC.Add(hodEmail);
 

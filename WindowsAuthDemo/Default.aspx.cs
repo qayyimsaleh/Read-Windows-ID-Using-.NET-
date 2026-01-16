@@ -20,7 +20,9 @@ namespace WindowsAuthDemo
             if (!IsPostBack)
             {
                 string windowsUser = User.Identity.Name;
-                lblUser.Text = "Logged in as: " + windowsUser;
+                lblUser.Text = windowsUser; // Changed for cleaner display
+                lblUserName.Text = windowsUser; // Added for user info card
+                lblUserSidebar.Text = windowsUser; // Added for sidebar
 
                 // Check if user is admin and set session
                 bool isAdmin = CheckUserIsAdmin(windowsUser);
@@ -34,6 +36,15 @@ namespace WindowsAuthDemo
                 normalUserContent = (System.Web.UI.HtmlControls.HtmlGenericControl)FindControl("normalUserContent");
                 adminPanel = (System.Web.UI.HtmlControls.HtmlGenericControl)FindControl("adminPanel");
                 infoAuthType = (System.Web.UI.HtmlControls.HtmlGenericControl)FindControl("infoAuthType");
+
+                // Find statistics controls
+                lblTotalUsers = (Label)FindControl("lblTotalUsers");
+                lblTotalAgreements = (Label)FindControl("lblTotalAgreements");
+                lblTotalDevices = (Label)FindControl("lblTotalDevices");
+                lblActiveAgreements = (Label)FindControl("lblActiveAgreements");
+
+                // Load dashboard statistics
+                LoadDashboardStatistics();
 
                 // Check user role and redirect accordingly
                 CheckUserRoleAndRedirect(windowsUser);
@@ -69,6 +80,7 @@ namespace WindowsAuthDemo
             }
             return false;
         }
+
         private void CheckUserRoleAndRedirect(string windowsUser)
         {
             string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["HardwareAgreementConnection"].ConnectionString;
@@ -113,8 +125,8 @@ namespace WindowsAuthDemo
                             // User doesn't exist, insert as normal user
                             // Try to extract email from Windows ID (domain\username -> username@company.com)
                             string email = windowsUser.Contains("\\")
-                                ? windowsUser.Split('\\')[1] + "@yourcompany.com"
-                                : windowsUser + "@yourcompany.com";
+                                ? windowsUser.Split('\\')[1] + "@ioioleo.com"
+                                : windowsUser + "@ioioleo.com";
 
                             string insertUserQuery = "INSERT INTO hardware_users (win_id, active, admin, email) VALUES (@win_id, 1, 0, @email)";
 
@@ -142,12 +154,7 @@ namespace WindowsAuthDemo
                     if (lblUserRole != null) lblUserRole.CssClass = "role-error";
                     if (lblError != null)
                     {
-                        if (lblError != null)
-                        {
-                            lblError.Text = "Database connection error. Showing normal user interface.";
-                            // OR use InnerHtml if you want HTML formatting:
-                            // lblError.InnerHtml = "<strong>Error:</strong> Database connection error.";
-                        }
+                        lblError.Text = "Database connection error. Showing normal user interface.";
                         lblError.Visible = true;
                     }
                 }
@@ -191,6 +198,120 @@ namespace WindowsAuthDemo
             }
 
             if (infoAuthType != null) infoAuthType.InnerText = "Windows Integrated";
+        }
+
+        // Class to hold dashboard statistics
+        private class DashboardStats
+        {
+            public int TotalUsers { get; set; }
+            public int TotalAgreements { get; set; }
+            public int TotalDevices { get; set; }
+            public int ActiveAgreements { get; set; }
+        }
+
+        // Method to load dashboard statistics
+        private void LoadDashboardStatistics()
+        {
+            try
+            {
+                DashboardStats stats;
+
+                // Check if stats are cached (cache for 5 minutes for better performance)
+                if (Cache["DashboardStats"] != null)
+                {
+                    stats = (DashboardStats)Cache["DashboardStats"];
+                }
+                else
+                {
+                    stats = GetDashboardStatistics();
+                    // Cache the stats for 5 minutes
+                    Cache.Insert("DashboardStats", stats, null,
+                        DateTime.Now.AddMinutes(5), TimeSpan.Zero);
+                }
+
+                // Bind statistics to labels
+                if (lblTotalUsers != null) lblTotalUsers.Text = FormatNumber(stats.TotalUsers);
+                if (lblTotalAgreements != null) lblTotalAgreements.Text = FormatNumber(stats.TotalAgreements);
+                if (lblTotalDevices != null) lblTotalDevices.Text = FormatNumber(stats.TotalDevices);
+                if (lblActiveAgreements != null) lblActiveAgreements.Text = FormatNumber(stats.ActiveAgreements);
+            }
+            catch (Exception ex)
+            {
+                // Log error but don't break the page
+                System.Diagnostics.Trace.WriteLine("Error loading statistics: " + ex.Message);
+
+                // Set default values
+                if (lblTotalUsers != null) lblTotalUsers.Text = "0";
+                if (lblTotalAgreements != null) lblTotalAgreements.Text = "0";
+                if (lblTotalDevices != null) lblTotalDevices.Text = "0";
+                if (lblActiveAgreements != null) lblActiveAgreements.Text = "0";
+            }
+        }
+
+        // Method to fetch statistics from database
+        private DashboardStats GetDashboardStatistics()
+        {
+            var stats = new DashboardStats();
+            string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["HardwareAgreementConnection"].ConnectionString;
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+
+                    // 1. Total Users: number of unduplicated value of column 'win_id' in hardware_users
+                    string usersQuery = "SELECT COUNT(DISTINCT win_id) FROM hardware_users";
+                    using (SqlCommand command = new SqlCommand(usersQuery, connection))
+                    {
+                        object result = command.ExecuteScalar();
+                        stats.TotalUsers = result != null && result != DBNull.Value ? Convert.ToInt32(result) : 0;
+                    }
+
+                    // 2. Total Agreements: number of unduplicated value of column 'agreement_number' in hardware_agreements
+                    string agreementsQuery = "SELECT COUNT(DISTINCT agreement_number) FROM hardware_agreements";
+                    using (SqlCommand command = new SqlCommand(agreementsQuery, connection))
+                    {
+                        object result = command.ExecuteScalar();
+                        stats.TotalAgreements = result != null && result != DBNull.Value ? Convert.ToInt32(result) : 0;
+                    }
+
+                    // 3. Total Devices: number of unduplicated value of column 'model' in hardware_model
+                    string devicesQuery = "SELECT COUNT(DISTINCT model) FROM hardware_model";
+                    using (SqlCommand command = new SqlCommand(devicesQuery, connection))
+                    {
+                        object result = command.ExecuteScalar();
+                        stats.TotalDevices = result != null && result != DBNull.Value ? Convert.ToInt32(result) : 0;
+                    }
+
+                    // 4. Active Agreements: number of rows with 'agreement_status' = 'Active'
+                    string activeQuery = "SELECT COUNT(*) FROM hardware_agreements WHERE agreement_status = 'Active'";
+                    using (SqlCommand command = new SqlCommand(activeQuery, connection))
+                    {
+                        object result = command.ExecuteScalar();
+                        stats.ActiveAgreements = result != null && result != DBNull.Value ? Convert.ToInt32(result) : 0;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log the error
+                    System.Diagnostics.Trace.WriteLine("Error getting dashboard statistics: " + ex.Message);
+
+                    // Return zero values if there's an error
+                    stats.TotalUsers = 0;
+                    stats.TotalAgreements = 0;
+                    stats.TotalDevices = 0;
+                    stats.ActiveAgreements = 0;
+                }
+            }
+
+            return stats;
+        }
+
+        // Helper method to format numbers with commas
+        private string FormatNumber(int number)
+        {
+            return number.ToString("N0");
         }
     }
 }

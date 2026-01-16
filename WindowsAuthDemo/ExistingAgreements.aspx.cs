@@ -8,7 +8,7 @@ namespace WindowsAuthDemo
     public partial class ExistingAgreements : System.Web.UI.Page
     {
         // Properties using ViewState for persistence
-        private int CurrentPage
+        protected int CurrentPage
         {
             get
             {
@@ -18,7 +18,7 @@ namespace WindowsAuthDemo
             set { ViewState["CurrentPage"] = value; }
         }
 
-        private int PageSize
+        protected int PageSize
         {
             get
             {
@@ -28,7 +28,7 @@ namespace WindowsAuthDemo
             set { ViewState["PageSize"] = value; }
         }
 
-        private int TotalRecords
+        protected int TotalRecords
         {
             get
             {
@@ -47,6 +47,9 @@ namespace WindowsAuthDemo
                 {
                     Response.Redirect("Default.aspx");
                 }
+
+                // Populate sidebar user info
+                lblUserName.Text = User.Identity.Name;
 
                 // Initialize page
                 CurrentPage = 1;
@@ -119,6 +122,7 @@ namespace WindowsAuthDemo
                     {
                         AddFilterParameters(countCmd);
                         TotalRecords = Convert.ToInt32(countCmd.ExecuteScalar());
+                        litTotalCount.Text = TotalRecords.ToString();
                     }
 
                     // Add pagination
@@ -136,8 +140,8 @@ namespace WindowsAuthDemo
                             gvAgreements.DataSource = dt;
                             gvAgreements.DataBind();
 
-                            // Show/hide no data message
-                            pnlNoData.Visible = dt.Rows.Count == 0;
+                            // Update showing count
+                            litShowingCount.Text = dt.Rows.Count.ToString();
                         }
                     }
 
@@ -377,16 +381,22 @@ namespace WindowsAuthDemo
             {
                 CurrentPage = Convert.ToInt32(e.CommandArgument);
                 LoadAgreements();
+
+                // Scroll to top of table
+                string script = "<script type='text/javascript'>" +
+                               "document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth' });" +
+                               "</script>";
+                ClientScript.RegisterStartupScript(this.GetType(), "ScrollToTop", script);
             }
         }
         public string GetPageCssClass(object dataItem)
-{
-    if (dataItem is DataRowView rowView)
-    {
-        int pageNumber = Convert.ToInt32(rowView["PageNumber"]);
-        return pageNumber == CurrentPage ? "page-link active" : "page-link";
-    }
-    return "page-link";
-}
+        {
+            if (dataItem is DataRowView rowView)
+            {
+                int pageNumber = Convert.ToInt32(rowView["PageNumber"]);
+                return pageNumber == CurrentPage ? "page-link active" : "page-link";
+            }
+            return "page-link";
+        }
     }
 }
