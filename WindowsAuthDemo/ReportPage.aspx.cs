@@ -24,18 +24,33 @@ namespace WindowsAuthDemo
 
                 // Check if user is admin
                 bool isAdmin = CheckUserIsAdmin(windowsUser);
-                lblStatus.Text = isAdmin ? "Administrator Access" : "Standard User Access";
-                lblUserRoleSidebar.Text = isAdmin ? "Administrator" : "Normal User";
 
-                // Set default date range (last 30 days)
-                txtEndDate.Text = DateTime.Now.ToString("yyyy-MM-dd");
-                txtStartDate.Text = DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd");
+                if (isAdmin)
+                {
+                    // User is admin, show reports interface
+                    pnlReportManagement.Visible = true;
+                    pnlAccessDenied.Visible = false;
+                    lblStatus.Text = "Administrator Access";
+                    lblUserRoleSidebar.Text = "Administrator";
 
-                // Load IT Staff dropdown
-                LoadITStaffDropdown();
+                    // Set default date range (last 30 days)
+                    txtEndDate.Text = DateTime.Now.ToString("yyyy-MM-dd");
+                    txtStartDate.Text = DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd");
 
-                // Load initial data
-                LoadReportData();
+                    // Load IT Staff dropdown
+                    LoadITStaffDropdown();
+
+                    // Load initial data
+                    LoadReportData();
+                }
+                else
+                {
+                    // User is not admin, show access denied
+                    pnlReportManagement.Visible = false;
+                    pnlAccessDenied.Visible = true;
+                    lblStatus.Text = "Standard User Access";
+                    lblUserRoleSidebar.Text = "Normal User";
+                }
             }
         }
 
@@ -52,7 +67,18 @@ namespace WindowsAuthDemo
                     {
                         command.Parameters.AddWithValue("@win_id", windowsUser);
                         object result = command.ExecuteScalar();
-                        return result != null && Convert.ToInt32(result) == 1;
+
+                        // Check if user exists and admin = 1
+                        if (result != null)
+                        {
+                            int adminValue = Convert.ToInt32(result);
+                            return adminValue == 1;
+                        }
+                        else
+                        {
+                            // User not found in database - deny access
+                            return false;
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -62,7 +88,6 @@ namespace WindowsAuthDemo
                 }
             }
         }
-
         private void LoadITStaffDropdown()
         {
             using (SqlConnection connection = new SqlConnection(connectionString))

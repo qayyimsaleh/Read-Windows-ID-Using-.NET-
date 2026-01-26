@@ -1,4 +1,4 @@
-﻿﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Agreement.aspx.cs" Inherits="WindowsAuthDemo.Agreement" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Agreement.aspx.cs" Inherits="WindowsAuthDemo.Agreement" %>
 
 <!DOCTYPE html>
 <html>
@@ -6,6 +6,8 @@
     <title><asp:Literal ID="litPageTitle" runat="server"></asp:Literal></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.3/dist/signature_pad.umd.min.js"></script>
+
     <style>
         * {
             margin: 0;
@@ -27,9 +29,9 @@
             --text-secondary: #64748b;
             --border-color: #e2e8f0;
             --success: #10b981;
+            --info: #3b82f6;
             --warning: #f59e0b;
             --danger: #ef4444;
-            --info: #3b82f6;
             --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
@@ -153,55 +155,40 @@
         }
 
         /* Header */
-        .page-header {
-            margin-bottom: 30px;
-        }
-
-        .header-title {
+        .top-header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 16px;
-            margin-bottom: 8px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
         }
 
-        .header-title h1 {
+        .page-title h1 {
             font-size: 1.8rem;
             font-weight: 700;
             color: var(--text-primary);
         }
 
-        .header-title .status-badge {
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-draft {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            color: white;
-        }
-
-        .status-pending {
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-            color: white;
-        }
-
-        .status-active {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-        }
-
-        .status-inactive {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: white;
-        }
-
-        .header-subtitle {
+        .page-title p {
             color: var(--text-secondary);
-            font-size: 1rem;
-            margin-bottom: 16px;
+            margin-top: 4px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: white;
+            padding: 10px 16px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .user-profile i {
+            color: var(--primary);
+            font-size: 1.2rem;
         }
 
         /* Breadcrumb */
@@ -236,6 +223,11 @@
             box-shadow: var(--shadow-md);
             border: 1px solid var(--border-color);
             overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .form-container:hover {
+            box-shadow: var(--shadow-lg);
         }
 
         /* Agreement Info Bar */
@@ -276,18 +268,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            animation: fadeIn 0.5s ease-out;
         }
 
         .message-success {
@@ -327,15 +308,15 @@
         }
 
         .section-icon {
-            width: 40px;
-            height: 40px;
+            width: 56px;
+            height: 56px;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 10px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 1.2rem;
+            font-size: 1.5rem;
         }
 
         .section-title {
@@ -358,7 +339,7 @@
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .form-label {
@@ -402,6 +383,30 @@
             border-color: #e2e8f0;
             color: var(--text-secondary);
             cursor: not-allowed;
+        }
+
+        /* Add to your existing CSS */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                position: fixed;
+                width: 280px;
+                z-index: 1000;
+            }
+    
+            .sidebar.mobile-open {
+                transform: translateX(0);
+                box-shadow: var(--shadow-lg);
+            }
+    
+            .main-content {
+                margin-left: 0;
+            }
+    
+            .sidebar-toggle {
+                display: flex !important;
+            }
         }
 
         .helper-text {
@@ -612,6 +617,34 @@
             gap: 5px;
         }
 
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-section,
+        .form-group,
+        .checkbox-group {
+            animation: fadeIn 0.5s ease-out;
+        }
+
         /* Responsive */
         @media (max-width: 1024px) {
             .sidebar {
@@ -619,7 +652,8 @@
             }
 
             .sidebar-header h2,
-            .nav-link span {
+            .nav-link span,
+            .user-info-sidebar .user-name {
                 display: none;
             }
 
@@ -650,6 +684,22 @@
                 padding: 16px;
             }
 
+            .nav-links {
+                display: flex;
+                overflow-x: auto;
+                padding: 10px;
+            }
+
+            .nav-item {
+                flex-shrink: 0;
+            }
+
+            .top-header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+
             .agreement-info-bar {
                 grid-template-columns: 1fr;
             }
@@ -678,6 +728,16 @@
                 width: 100%;
                 justify-content: center;
             }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .form-sections {
+                padding: 16px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -686,16 +746,75 @@
             }
 
             .form-sections {
-                padding: 16px;
-            }
-
-            .section-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 8px;
+                padding: 12px;
             }
         }
+
+        /* Employee Signature Section */
+        .agreement-terms {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .signature-section {
+            margin: 15px 0;
+        }
+
+        .signature-canvas-container {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            background: white;
+        }
+
+        .signature-canvas {
+            width: 100%;
+            height: 200px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: crosshair;
+        }
+
+        .signature-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .signature-preview {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .signature-display {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            max-width: 300px;
+            margin: 0 auto;
+            background: white;
+        }
+
+        .employee-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .terms-acceptance {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-radius: 8px;
+            border: 1px solid #c8e6c9;
+        }
     </style>
+
 </head>
 <body>
     <form id="form1" runat="server">
@@ -783,6 +902,29 @@
 
         <!-- Main Content -->
         <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <div class="page-title">
+                    <h1>
+                        <asp:Literal ID="litHeaderTitle" runat="server"></asp:Literal>
+                    </h1>
+                    <p>
+                        <asp:Literal ID="litHeaderDescription" runat="server"></asp:Literal>
+                    </p>
+                </div>
+                <div class="user-profile">
+                    <i class="fas fa-user-circle"></i>
+                    <div>
+                        <div style="font-weight: 600;">
+                            <asp:Label ID="lblTopUserName" runat="server"></asp:Label>
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                            <asp:Label ID="lblTopUserRole" runat="server"></asp:Label>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
             <!-- Breadcrumb -->
             <div class="breadcrumb">
                 <a href="Default.aspx">
@@ -793,26 +935,17 @@
                 <a href="Default.aspx">Computer Panel</a>
                 <span class="separator">/</span>
                 <span style="color: var(--text-secondary);">
-                    <asp:Literal ID="litHeaderTitle" runat="server"></asp:Literal>
+                    <asp:Literal ID="litBreadcrumbTitle" runat="server"></asp:Literal>
                 </span>
             </div>
 
-            <!-- Page Header -->
-            <div class="page-header">
-                <div class="header-title">
-                    <h1>
-                        <i class="fas fa-file-contract"></i>
-                        <asp:Literal ID="Literal1" runat="server"></asp:Literal>
-                    </h1>
-                    <asp:Literal ID="litStatusBadge" runat="server"></asp:Literal>
-                </div>
-                <div class="header-subtitle">
-                    <asp:Literal ID="litHeaderDescription" runat="server"></asp:Literal>
-                </div>
+            <!-- Status Badge -->
+            <div style="margin-bottom: 24px;">
+                <asp:Literal ID="litStatusBadge" runat="server"></asp:Literal>
             </div>
 
             <!-- Form Container -->
-            <div class="form-container">
+            <div class="form-container" id="formContainer" runat="server">
                 <!-- Agreement Info Bar -->
                 <div class="agreement-info-bar" id="agreementInfo" runat="server" visible="false">
                     <div class="info-item">
@@ -847,7 +980,7 @@
                 </div>
 
                 <!-- Form Sections -->
-                <div class="form-sections" id="formContainer" runat="server">
+                <div class="form-sections">
                     <!-- Hardware Details Section -->
                     <div class="form-section">
                         <div class="section-header">
@@ -892,7 +1025,8 @@
                                         
                                         <div class="form-group">
                                             <label class="form-label required">Device Type</label>
-                                            <asp:DropDownList ID="ddlDeviceType" runat="server" CssClass="form-select">
+                                            <asp:DropDownList ID="ddlDeviceType" runat="server" CssClass="form-select"
+                                                AutoPostBack="true" OnSelectedIndexChanged="ddlDeviceType_SelectedIndexChanged">
                                                 <asp:ListItem Value="">-- Select Type --</asp:ListItem>
                                                 <asp:ListItem Value="Laptop">Laptop</asp:ListItem>
                                                 <asp:ListItem Value="Desktop">Desktop</asp:ListItem>
@@ -934,8 +1068,8 @@
                         </div>
                     </div>
 
-                    <!-- Accessories Section -->
-                    <div class="form-section">
+                    <!-- Accessories Section (Wrapped in Panel) -->
+                    <asp:Panel ID="accessoriesSection" runat="server" CssClass="form-section">
                         <div class="section-header">
                             <div class="section-icon">
                                 <i class="fas fa-box-open"></i>
@@ -949,7 +1083,7 @@
                         <div class="accessories-grid">
                             <div class="checkbox-group">
                                 <asp:CheckBox ID="chkCarryBag" runat="server" />
-                                <label for="chkCarryBag">Carry Bag</label>
+                                <label for="chkCarryBag">Bag</label>
                             </div>
 
                             <div class="checkbox-group">
@@ -989,7 +1123,7 @@
                             <asp:TextBox ID="txtOtherAccessories" runat="server" CssClass="form-control" 
                                 placeholder="List any other accessories..." TextMode="MultiLine" Rows="3"></asp:TextBox>
                         </div>
-                    </div>
+                    </asp:Panel>
 
                     <!-- IT Details Section -->
                     <div class="form-section">
@@ -1092,6 +1226,97 @@
                             </div>
                         </asp:Panel>
                     </div>
+                    <!-- Employee Signature Section -->
+                    <asp:Panel ID="pnlEmployeeSignature" runat="server" CssClass="form-section" Visible="false">
+                        <div class="section-header">
+                            <div class="section-icon">
+                                <i class="fas fa-signature"></i>
+                            </div>
+                            <div>
+                                <div class="section-title">Employee Agreement & Signature</div>
+                                <div class="section-subtitle">Review and sign the hardware agreement</div>
+                            </div>
+                        </div>
+
+                        <div class="agreement-terms">
+                            <h3 style="color: var(--primary); margin-bottom: 15px;">Hardware Usage Agreement</h3>
+        
+                            <!-- Agreement Terms Text -->
+                            <div style="line-height: 1.6; margin-bottom: 20px;">
+                                <p><strong>In acceptance of this device (Laptop/PC) for usage, I agree to the terms and conditions stated below:</strong></p>
+                                <ol style="margin-left: 20px; margin-bottom: 15px;">
+                                    <li>I understand that I am responsible for the laptop/PC whilst in my possession.</li>
+                                    <li>I am responsible for keeping the laptop/PC in good condition while using it and until the time of return.</li>
+                                    <li>I understand that I should not install any program or software that is not permitted to use by the company, for privacy and security reasons.</li>
+                                    <li>I should be the only authorized person to have access to and use this laptop/PC. Any unauthorized access to this laptop/PC is a violation of this company's policy, employment regulation and employment contract.</li>
+                                    <li>I should remove all data that is not company or work-related before turning over the laptop/PC to the designated department.</li>
+                                    <li>In the event of loss, theft, or damage, this must be reported to the police within 24-48 hours, and a copy of a Police report or incident report must be submitted to the company for verification purposes.</li>
+                                    <li>I understand that any violation of these policies is a violation and I am subject to any disciplinary action by the company.</li>
+                                </ol>
+                            </div>
+
+                            <!-- Digital Signature -->
+                            <div class="signature-section">
+                                <label class="form-label required">Digital Signature</label>
+                                <div class="signature-canvas-container">
+                                    <canvas id="signatureCanvas" class="signature-canvas"></canvas>
+                                    <div class="signature-actions">
+                                        <button type="button" id="clearSignature" class="btn btn-outline" style="padding: 8px 16px;">
+                                            <i class="fas fa-eraser"></i> Clear
+                                        </button>
+                                        <button type="button" id="saveSignature" class="btn btn-secondary" style="padding: 8px 16px;">
+                                            <i class="fas fa-save"></i> Save Signature
+                                        </button>
+                                    </div>
+                                </div>
+            
+                                <!-- Signature Preview -->
+                                <div class="signature-preview">
+                                    <label class="form-label">Signature Preview:</label>
+                                    <div class="signature-display">
+                                        <img id="signaturePreview" src="" alt="Signature Preview" style="max-width: 100%; display: none;" />
+                                        <p id="noSignatureText" style="color: var(--text-secondary); font-style: italic;">No signature saved yet</p>
+                                    </div>
+                                </div>
+            
+                                <!-- Hidden fields for signature -->
+                                <asp:HiddenField ID="hdnSignatureData" runat="server" />
+                                <asp:HiddenField ID="hdnIsSigned" runat="server" Value="false" />
+            
+                                <!-- Keep only the signature date and signed by fields -->
+                                <div class="employee-info-grid" style="margin-top: 20px;">
+                                    <div class="form-group">
+                                        <label class="form-label">Signature Date</label>
+                                        <asp:TextBox ID="txtEmpSignatureDate" runat="server" CssClass="form-control" 
+                                            ReadOnly="true"></asp:TextBox>
+                                    </div>
+                
+                                    <div class="form-group">
+                                        <label class="form-label">Signed By (Windows ID)</label>
+                                        <asp:TextBox ID="txtEmpSignedBy" runat="server" CssClass="form-control" 
+                                            ReadOnly="true"></asp:TextBox>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Agreement Acceptance -->
+                            <div class="terms-acceptance">
+                                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                                    <asp:CheckBox ID="chkAgreeTerms" runat="server" />
+                                    <div>
+                                        <label for="chkAgreeTerms" style="font-weight: 600; color: #2e7d32;">
+                                            I have read, understood, and agree to all the terms and conditions stated above
+                                        </label>
+                                        <asp:CustomValidator ID="cvAgreeTerms" runat="server" 
+                                            ErrorMessage="You must agree to the terms and conditions"
+                                            ClientValidationFunction="validateEmployeeAgreement"
+                                            Display="Dynamic" ForeColor="#ef4444">
+                                        </asp:CustomValidator>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </asp:Panel>
                 </div>
 
                 <!-- Action Buttons -->
@@ -1104,12 +1329,17 @@
                         CssClass="btn btn-outline" OnClick="btnEdit_Click" Visible="false" />
                     <asp:Button ID="btnDelete" runat="server" Text="Delete" 
                         CssClass="btn btn-danger" OnClick="btnDelete_Click" Visible="false" />
+                    <asp:Button ID="btnSubmitEmployee" runat="server" Text="Submit Employee Agreement" 
+                        CssClass="btn btn-primary" OnClick="btnSubmitEmployee_Click" Visible="false" />
                 </div>
             </div>
 
             <!-- Footer -->
-            <div style="margin-top: 40px; text-align: center; color: var(--text-secondary); font-size: 0.85rem;">
+            <div class="footer">
                 <p>Hardware Agreement System &copy; <%= DateTime.Now.Year %> | Secure Enterprise Portal</p>
+                <p style="margin-top: 8px; font-size: 0.8rem; color: #94a3b8;">
+                    Windows Authentication | Last updated: <%= DateTime.Now.ToString("MMMM dd, yyyy HH:mm") %>
+                </p>
             </div>
         </main>
     </form>
@@ -1202,22 +1432,132 @@
                 box-shadow: var(--shadow-lg);
             `;
 
+            // Add the class name for selection
+            sidebarToggle.classList.add('sidebar-toggle');
             document.body.appendChild(sidebarToggle);
 
             sidebarToggle.addEventListener('click', function () {
                 document.querySelector('.sidebar').classList.toggle('mobile-open');
             });
 
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function (e) {
+                const sidebar = document.querySelector('.sidebar');
+                const toggleBtn = document.querySelector('.sidebar-toggle');
+
+                if (window.innerWidth <= 768 &&
+                    sidebar.classList.contains('mobile-open') &&
+                    !sidebar.contains(e.target) &&
+                    e.target !== toggleBtn &&
+                    !toggleBtn.contains(e.target)) {
+                    sidebar.classList.remove('mobile-open');
+                }
+            });
+
             function handleResize() {
+                const sidebar = document.querySelector('.sidebar');
+                const toggleBtn = document.querySelector('.sidebar-toggle');
+
+                if (!toggleBtn) return; // Add null check
+
                 if (window.innerWidth <= 768) {
-                    sidebarToggle.style.display = 'flex';
+                    toggleBtn.style.display = 'flex';
+                    sidebar.classList.remove('mobile-open');
                 } else {
-                    sidebarToggle.style.display = 'none';
+                    toggleBtn.style.display = 'none';
+                    sidebar.classList.remove('mobile-open');
+                    sidebar.style.transform = 'none';
                 }
             }
 
             window.addEventListener('resize', handleResize);
             handleResize();
+
+            // Initialize signature pad
+            const canvas = document.getElementById('signatureCanvas');
+            if (canvas) {
+                let signaturePad = new SignaturePad(canvas, {
+                    backgroundColor: 'white',
+                    penColor: 'rgb(0, 0, 0)',
+                    throttle: 16
+                });
+
+                // Handle clear button
+                document.getElementById('clearSignature').addEventListener('click', function () {
+                    signaturePad.clear();
+                    document.getElementById('signaturePreview').style.display = 'none';
+                    document.getElementById('noSignatureText').style.display = 'block';
+                    document.getElementById('<%= hdnSignatureData.ClientID %>').value = '';
+                    document.getElementById('<%= hdnIsSigned.ClientID %>').value = 'false';
+                });
+                
+                // Handle save button
+                document.getElementById('saveSignature').addEventListener('click', function () {
+                    if (signaturePad.isEmpty()) {
+                        alert('Please provide your signature first.');
+                        return;
+                    }
+                    
+                    const signatureData = signaturePad.toDataURL('image/png');
+                    document.getElementById('<%= hdnSignatureData.ClientID %>').value = signatureData;
+                    document.getElementById('<%= hdnIsSigned.ClientID %>').value = 'true';
+                    
+                    // Show preview
+                    const previewImg = document.getElementById('signaturePreview');
+                    previewImg.src = signatureData;
+                    previewImg.style.display = 'block';
+                    document.getElementById('noSignatureText').style.display = 'none';
+                    
+                    alert('Signature saved successfully!');
+                });
+                
+                // Resize canvas
+                function resizeCanvas() {
+                    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                    canvas.width = canvas.offsetWidth * ratio;
+                    canvas.height = canvas.offsetHeight * ratio;
+                    canvas.getContext("2d").scale(ratio, ratio);
+                    signaturePad.clear();
+                }
+                
+                window.addEventListener('resize', resizeCanvas);
+                resizeCanvas();
+            }
+            
+            // Employee agreement validation
+            window.validateEmployeeAgreement = function(source, args) {
+                const isAgreed = document.getElementById('<%= chkAgreeTerms.ClientID %>').checked;
+                const isSigned = document.getElementById('<%= hdnIsSigned.ClientID %>').value === 'true';
+                
+                if (!isAgreed || !isSigned) {
+                    args.IsValid = false;
+                    alert('Please agree to the terms and provide your signature.');
+                } else {
+                    args.IsValid = true;
+                }
+            }
+            
+            // Auto-fill employee signature fields
+            const userName = '<%= Page.User.Identity.Name %>';
+            if (userName && userName !== '') {
+                const signedByField = document.getElementById('<%= txtEmpSignedBy.ClientID %>');
+                const signatureDateField = document.getElementById('<%= txtEmpSignatureDate.ClientID %>');
+
+                if (signedByField && !signedByField.value) {
+                    // Extract username from domain\username format
+                    const parts = userName.split('\\');
+                    if (parts.length > 1) {
+                        signedByField.value = parts[1];
+                    } else {
+                        signedByField.value = userName;
+                    }
+                }
+
+                if (signatureDateField && !signatureDateField.value) {
+                    const now = new Date();
+                    signatureDateField.value = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB');
+                }
+            }
         });
     </script>
 </body>

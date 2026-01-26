@@ -11,7 +11,7 @@ namespace WindowsAuthDemo
 {
 
 
-    public partial class ReportPage
+    public partial class EmployeeAgreement
     {
 
         /// <summary>
@@ -24,210 +24,165 @@ namespace WindowsAuthDemo
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
 
         /// <summary>
-        /// lblUserRoleSidebar control.
+        /// agreementInfo control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblUserRoleSidebar;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl agreementInfo;
 
         /// <summary>
-        /// lblUserSidebar control.
+        /// agreementNumber control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblUserSidebar;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl agreementNumber;
 
         /// <summary>
-        /// lblUser control.
+        /// modelInfo control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblUser;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl modelInfo;
 
         /// <summary>
-        /// lblStatus control.
+        /// serialNumber control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblStatus;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl serialNumber;
 
         /// <summary>
-        /// pnlAccessDenied control.
+        /// statusInfo control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlAccessDenied;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl statusInfo;
 
         /// <summary>
-        /// pnlReportManagement control.
+        /// messagePanel control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlReportManagement;
+        protected global::System.Web.UI.WebControls.Panel messagePanel;
 
         /// <summary>
-        /// txtStartDate control.
+        /// messageText control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtStartDate;
+        protected global::System.Web.UI.WebControls.Label messageText;
 
         /// <summary>
-        /// txtEndDate control.
+        /// txtEmployeeName control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtEndDate;
+        protected global::System.Web.UI.WebControls.TextBox txtEmployeeName;
 
         /// <summary>
-        /// ddlStatus control.
+        /// txtEmployeeID control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlStatus;
+        protected global::System.Web.UI.WebControls.TextBox txtEmployeeID;
 
         /// <summary>
-        /// ddlHardwareType control.
+        /// txtPosition control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlHardwareType;
+        protected global::System.Web.UI.WebControls.TextBox txtPosition;
 
         /// <summary>
-        /// ddlITStaff control.
+        /// txtDepartment control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlITStaff;
+        protected global::System.Web.UI.WebControls.TextBox txtDepartment;
 
         /// <summary>
-        /// btnApplyFilters control.
+        /// hdnSignatureData control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnApplyFilters;
+        protected global::System.Web.UI.WebControls.HiddenField hdnSignatureData;
 
         /// <summary>
-        /// btnClearFilters control.
+        /// hdnIsSigned control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnClearFilters;
+        protected global::System.Web.UI.WebControls.HiddenField hdnIsSigned;
 
         /// <summary>
-        /// btnExport control.
+        /// txtSignatureDate control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnExport;
+        protected global::System.Web.UI.WebControls.TextBox txtSignatureDate;
 
         /// <summary>
-        /// litTotalAgreements control.
+        /// txtSignedBy control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litTotalAgreements;
+        protected global::System.Web.UI.WebControls.TextBox txtSignedBy;
 
         /// <summary>
-        /// litActiveAgreements control.
+        /// chkAgreeTerms control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litActiveAgreements;
+        protected global::System.Web.UI.WebControls.CheckBox chkAgreeTerms;
 
         /// <summary>
-        /// litPendingAgreements control.
+        /// cvAgreeTerms control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litPendingAgreements;
+        protected global::System.Web.UI.WebControls.CustomValidator cvAgreeTerms;
 
         /// <summary>
-        /// litLaptopCount control.
+        /// btnSubmitAgreement control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litLaptopCount;
-
-        /// <summary>
-        /// gvRecentAgreements control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gvRecentAgreements;
-
-        /// <summary>
-        /// gvAccessories control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gvAccessories;
-
-        /// <summary>
-        /// litLaptopPercentage control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litLaptopPercentage;
-
-        /// <summary>
-        /// litTopITStaff control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litTopITStaff;
-
-        /// <summary>
-        /// litAvgProcessingTime control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litAvgProcessingTime;
+        protected global::System.Web.UI.WebControls.Button btnSubmitAgreement;
     }
 }

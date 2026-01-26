@@ -60,13 +60,40 @@ namespace WindowsAuthDemo
         protected global::System.Web.UI.WebControls.Literal litHeaderTitle;
 
         /// <summary>
-        /// Literal1 control.
+        /// litHeaderDescription control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal Literal1;
+        protected global::System.Web.UI.WebControls.Literal litHeaderDescription;
+
+        /// <summary>
+        /// lblTopUserName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblTopUserName;
+
+        /// <summary>
+        /// lblTopUserRole control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblTopUserRole;
+
+        /// <summary>
+        /// litBreadcrumbTitle control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litBreadcrumbTitle;
 
         /// <summary>
         /// litStatusBadge control.
@@ -78,13 +105,13 @@ namespace WindowsAuthDemo
         protected global::System.Web.UI.WebControls.Literal litStatusBadge;
 
         /// <summary>
-        /// litHeaderDescription control.
+        /// formContainer control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litHeaderDescription;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl formContainer;
 
         /// <summary>
         /// agreementInfo control.
@@ -166,15 +193,6 @@ namespace WindowsAuthDemo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl errorText;
-
-        /// <summary>
-        /// formContainer control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl formContainer;
 
         /// <summary>
         /// ddlModel control.
@@ -274,6 +292,15 @@ namespace WindowsAuthDemo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.RequiredFieldValidator rfvAssetNumber;
+
+        /// <summary>
+        /// accessoriesSection control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel accessoriesSection;
 
         /// <summary>
         /// chkCarryBag control.
@@ -429,6 +456,69 @@ namespace WindowsAuthDemo
         protected global::System.Web.UI.WebControls.RadioButton rbInactive;
 
         /// <summary>
+        /// pnlEmployeeSignature control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlEmployeeSignature;
+
+        /// <summary>
+        /// hdnSignatureData control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hdnSignatureData;
+
+        /// <summary>
+        /// hdnIsSigned control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hdnIsSigned;
+
+        /// <summary>
+        /// txtEmpSignatureDate control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtEmpSignatureDate;
+
+        /// <summary>
+        /// txtEmpSignedBy control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtEmpSignedBy;
+
+        /// <summary>
+        /// chkAgreeTerms control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.CheckBox chkAgreeTerms;
+
+        /// <summary>
+        /// cvAgreeTerms control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.CustomValidator cvAgreeTerms;
+
+        /// <summary>
         /// actionButtons control.
         /// </summary>
         /// <remarks>
@@ -472,5 +562,14 @@ namespace WindowsAuthDemo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnDelete;
+
+        /// <summary>
+        /// btnSubmitEmployee control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnSubmitEmployee;
     }
 }

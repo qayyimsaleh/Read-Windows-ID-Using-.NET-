@@ -139,6 +139,10 @@
             background: rgba(0, 0, 0, 0.2);
         }
 
+        .chart-card:last-child {
+            display: none;
+        }
+
         .user-avatar {
             width: 40px;
             height: 40px;
@@ -224,11 +228,68 @@
             color: var(--text-primary);
         }
 
+        .date-range-group {
+            grid-column: span 2; /* Takes 2 out of 4 columns */
+        }
+
+        .date-range-inputs {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .date-range-inputs .filter-control {
+            flex: 1;
+            min-width: 0; /* Allows flex items to shrink properly */
+        }
+
         .filters-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(4, 1fr); /* 4 equal columns */
             gap: 20px;
             margin-bottom: 20px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            .filters-grid {
+                grid-template-columns: repeat(2, 1fr); /* 2 columns on medium screens */
+            }
+    
+            .date-range-group {
+                grid-column: span 2; /* Date range takes full width */
+            }
+        }
+
+        @media (max-width: 768px) {
+            .filters-grid {
+                grid-template-columns: 1fr; /* 1 column on small screens */
+                gap: 16px;
+            }
+    
+            .date-range-group,
+            .filter-group:not(.date-range-group) {
+                grid-column: span 1; /* All take full width */
+            }
+    
+            .date-range-inputs {
+                flex-direction: column; /* Stack date inputs vertically */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .filters-grid {
+                gap: 12px;
+            }
+    
+            .filter-control {
+                font-size: 14px; /* Smaller font on very small screens */
+                padding: 10px 12px;
+            }
+        }
+
+        .filter-group:not(.date-range-group) {
+            grid-column: span 1;
         }
 
         .filter-group {
@@ -279,6 +340,32 @@
             display: flex;
             align-items: center;
             gap: 8px;
+        }
+
+        /* Add to your existing CSS in ReportPage.aspx */
+        .access-denied {
+            text-align: center;
+            padding: 60px 20px;
+            max-width: 600px;
+            margin: 40px auto;
+        }
+
+        .denied-icon {
+            font-size: 4rem;
+            color: var(--danger);
+            margin-bottom: 24px;
+        }
+
+        .denied-title {
+            font-size: 2rem;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .denied-message {
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            line-height: 1.6;
         }
 
         .btn-primary {
@@ -392,10 +479,9 @@
             color: var(--text-secondary);
         }
 
-        /* Charts Section */
         .charts-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
             gap: 24px;
             margin-bottom: 30px;
         }
@@ -807,6 +893,25 @@
                 </div>
             </header>
 
+            <!-- Access Check -->
+            <asp:Panel ID="pnlAccessDenied" runat="server" Visible="false">
+                <div class="access-denied">
+                    <div class="denied-icon">
+                        <i class="fas fa-ban"></i>
+                    </div>
+                    <h2 class="denied-title">Access Denied</h2>
+                    <p class="denied-message">
+                        You don't have administrator privileges to access the Reports & Analytics page.
+                        Only users with administrator role can view detailed reports.
+                    </p>
+                    <a href="Default.aspx" class="btn btn-primary">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Dashboard
+                    </a>
+                </div>
+            </asp:Panel>
+
+        <asp:Panel ID="pnlReportManagement" runat="server" Visible="false">
             <!-- Filters Section -->
             <div class="filters-section">
                 <div class="filters-header">
@@ -815,9 +920,9 @@
                 </div>
 
                 <div class="filters-grid">
-                    <div class="filter-group">
+                    <div class="filter-group date-range-group">
                         <label class="filter-label">Date Range</label>
-                        <div style="display: flex; gap: 12px;">
+                        <div class="date-range-inputs" style="display: flex; gap: 12px;">
                             <asp:TextBox ID="txtStartDate" runat="server" TextMode="Date" CssClass="filter-control"></asp:TextBox>
                             <asp:TextBox ID="txtEndDate" runat="server" TextMode="Date" CssClass="filter-control"></asp:TextBox>
                         </div>
@@ -953,16 +1058,6 @@
                         <canvas id="trendChart"></canvas>
                     </div>
                 </div>
-
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <div class="chart-title">IT Staff Performance</div>
-                        <div class="chart-period">Top 5 IT Staff</div>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="staffChart"></canvas>
-                    </div>
-                </div>
             </div>
 
             <!-- Data Tables Section -->
@@ -1086,7 +1181,7 @@
                     </div>
                 </div>
             </div>
-
+        </asp:Panel>
             <div class="footer">
                 <p>Reports & Analytics &copy; <%= DateTime.Now.Year %> | Generated on: <%= DateTime.Now.ToString("MMMM dd, yyyy HH:mm:ss") %></p>
                 <p style="margin-top: 8px; font-size: 0.8rem; color: #94a3b8;">
@@ -1099,135 +1194,14 @@
 <script>
     // Initialize Charts with static data (will be replaced with real data)
     document.addEventListener('DOMContentLoaded', function () {
-        // Chart 1: Agreements by Status
-        const statusCtx = document.getElementById('statusChart').getContext('2d');
-        const statusChart = new Chart(statusCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Pending', 'Draft', 'Approved', 'Rejected'],
-                datasets: [{
-                    data: [8, 2, 0, 0], // Static data for now
-                    backgroundColor: [
-                        'rgba(245, 158, 11, 0.8)',
-                        'rgba(148, 163, 184, 0.8)',
-                        'rgba(16, 185, 129, 0.8)',
-                        'rgba(239, 68, 68, 0.8)'
-                    ],
-                    borderColor: [
-                        'rgba(245, 158, 11, 1)',
-                        'rgba(148, 163, 184, 1)',
-                        'rgba(16, 185, 129, 1)',
-                        'rgba(239, 68, 68, 1)'
-                    ],
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: {
-                            padding: 20,
-                            usePointStyle: true
-                        }
-                    }
-                }
-            }
-        });
+        // Check if admin panel is visible before initializing charts
+        const adminPanel = document.getElementById('<%= pnlReportManagement.ClientID %>');
 
-        // Chart 2: Agreements by Hardware Type
-        const typeCtx = document.getElementById('typeChart').getContext('2d');
-        const typeChart = new Chart(typeCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Laptop', 'Desktop', 'Tablet', 'Other'],
-                datasets: [{
-                    label: 'Number of Agreements',
-                    data: [7, 2, 1, 1], // Static data for now
-                    backgroundColor: [
-                        'rgba(239, 68, 68, 0.7)',
-                        'rgba(114, 9, 183, 0.7)',
-                        'rgba(16, 185, 129, 0.7)',
-                        'rgba(139, 92, 246, 0.7)'
-                    ],
-                    borderColor: [
-                        'rgba(239, 68, 68, 1)',
-                        'rgba(114, 9, 183, 1)',
-                        'rgba(16, 185, 129, 1)',
-                        'rgba(139, 92, 246, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1
-                        }
-                    }
-                }
-            }
-        });
+        if (adminPanel && adminPanel.style.display !== 'none') {
+            initializeCharts();
+        }
 
-        // Chart 3: Monthly Trend
-        const trendCtx = document.getElementById('trendChart').getContext('2d');
-        const trendChart = new Chart(trendCtx, {
-            type: 'line',
-            data: {
-                labels: ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'], // Static labels
-                datasets: [{
-                    label: 'Agreements Created',
-                    data: [2, 3, 1, 4, 6, 8], // Static data for now
-                    borderColor: 'rgba(67, 97, 238, 1)',
-                    backgroundColor: 'rgba(67, 97, 238, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-
-        // Chart 4: IT Staff Performance
-        const staffCtx = document.getElementById('staffChart').getContext('2d');
-        const staffChart = new Chart(staffCtx, {
-            type: 'horizontalBar',
-            data: {
-                labels: ['PANCENTURY\\Qayyim', 'Staff2', 'Staff3', 'Staff4', 'Staff5'], // Static labels
-                datasets: [{
-                    label: 'Agreements Processed',
-                    data: [10, 8, 6, 4, 2], // Static data for now
-                    backgroundColor: 'rgba(16, 185, 129, 0.7)',
-                    borderColor: 'rgba(16, 185, 129, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                indexAxis: 'y',
-                scales: {
-                    x: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-
+        // Rest of your existing code (navigation highlighting, responsive handling, etc.)
         // Add active class to current page
         const currentPage = window.location.pathname.split('/').pop();
         const navLinks = document.querySelectorAll('.nav-link');
@@ -1277,6 +1251,117 @@
         window.addEventListener('resize', handleResize);
         handleResize();
     });
+
+    function initializeCharts() {
+        // Chart 1: Agreements by Status
+        const statusCtx = document.getElementById('statusChart');
+        if (statusCtx) {
+            new Chart(statusCtx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pending', 'Draft', 'Approved', 'Rejected'],
+                    datasets: [{
+                        data: [8, 2, 0, 0],
+                        backgroundColor: [
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(148, 163, 184, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(239, 68, 68, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(245, 158, 11, 1)',
+                            'rgba(148, 163, 184, 1)',
+                            'rgba(16, 185, 129, 1)',
+                            'rgba(239, 68, 68, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Chart 2: Agreements by Hardware Type
+        const typeCtx = document.getElementById('typeChart');
+        if (typeCtx) {
+            new Chart(typeCtx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Laptop', 'Desktop', 'Tablet', 'Other'],
+                    datasets: [{
+                        label: 'Number of Agreements',
+                        data: [7, 2, 1, 1],
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.7)',
+                            'rgba(114, 9, 183, 0.7)',
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(139, 92, 246, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(239, 68, 68, 1)',
+                            'rgba(114, 9, 183, 1)',
+                            'rgba(16, 185, 129, 1)',
+                            'rgba(139, 92, 246, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Chart 3: Monthly Trend
+        const trendCtx = document.getElementById('trendChart');
+        if (trendCtx) {
+            new Chart(trendCtx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'],
+                    datasets: [{
+                        label: 'Agreements Created',
+                        data: [2, 3, 1, 4, 6, 8],
+                        borderColor: 'rgba(67, 97, 238, 1)',
+                        backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    }
 
     // Export data function
     function exportToExcel() {
