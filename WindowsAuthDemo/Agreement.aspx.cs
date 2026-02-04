@@ -21,116 +21,210 @@ namespace WindowsAuthDemo
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!IsPostBack)
+            // Always get token from query string (persists on PostBack)
+            accessToken = Request.QueryString["token"];
+
+            // Check if employee mode based on token presence
+            isEmployeeMode = !string.IsNullOrEmpty(accessToken);
+
+            // On PostBack, restore state from ViewState AND hidden field
+            // On PostBack, restore state from ViewState AND hidden field
+            if (IsPostBack)
             {
-                // Add this line to populate the sidebar user name
-                lblUserName.Text = User.Identity.Name;
-                lblTopUserName.Text = User.Identity.Name;
-                lblTopUserRole.Text = "Administrator";
-
-                // Debug: Log current user info
-                System.Diagnostics.Debug.WriteLine($"=== Page_Load ===");
-                System.Diagnostics.Debug.WriteLine($"Current Windows ID: {User.Identity.Name}");
-                System.Diagnostics.Debug.WriteLine($"Token from URL: {Request.QueryString["token"]}");
-
-                // Check if employee mode (via token)
-                accessToken = Request.QueryString["token"];
-                if (!string.IsNullOrEmpty(accessToken))
+                // First try hidden field (most reliable)
+                if (!string.IsNullOrEmpty(hdnAgreementId.Value))
                 {
-                    // Employee accessing via token
-                    isEmployeeMode = true;
-                    System.Diagnostics.Debug.WriteLine($"Employee mode detected. Token: {accessToken}");
-
-                    ValidateEmployeeAccess(accessToken);
-
-                    // IMPORTANT: Return here if validation failed
-                    if (!currentAgreementId.HasValue)
+                    int parsedId;
+                    if (int.TryParse(hdnAgreementId.Value, out parsedId))
                     {
-                        System.Diagnostics.Debug.WriteLine($"Validation failed. currentAgreementId is null.");
-                        return;
-                    }
-                    else
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Validation successful. Agreement ID: {currentAgreementId.Value}");
+                        currentAgreementId = parsedId;
                     }
                 }
-                else
+
+                // Fallback to ViewState
+                if (!currentAgreementId.HasValue && ViewState["CurrentAgreementId"] != null)
                 {
-                    // Admin mode - check if user is admin
-                    if (Session["IsAdmin"] == null || !(bool)Session["IsAdmin"])
-                    {
-                        Response.Redirect("Default.aspx");
-                        return;
-                    }
+                    currentAgreementId = (int?)ViewState["CurrentAgreementId"];
+                }
 
-                    // Check mode from query string
-                    string mode = Request.QueryString["mode"];
-                    isViewMode = (mode == "view");
+                // Restore other state
+                if (ViewState["CurrentStatus"] != null)
+                {
+                    currentStatus = (string)ViewState["CurrentStatus"];
+                }
+                if (ViewState["IsEmployeeMode"] != null)
+                {
+                    isEmployeeMode = (bool)ViewState["IsEmployeeMode"];
+                }
+                if (ViewState["IsViewMode"] != null)
+                {
+                    isViewMode = (bool)ViewState["IsViewMode"];
+                }
+                if (ViewState["IsEditMode"] != null)
+                {
+                    isEditMode = (bool)ViewState["IsEditMode"];
+                }
 
-                    // Check if editing/viewing existing agreement
+                // ADD THIS LINE to restore token
+                if (ViewState["AccessToken"] != null)
+                {
+                    accessToken = (string)ViewState["AccessToken"];
+                }
+
+                System.Diagnostics.Debug.WriteLine($"PostBack - CurrentAgreementId: {currentAgreementId}, hdnAgreementId: {hdnAgreementId.Value}, Token: {accessToken}");
+
+                // ADD DEBUG INFO
+                System.Diagnostics.Debug.WriteLine($"PostBack Debug - IsEmployeeMode: {isEmployeeMode}");
+                System.Diagnostics.Debug.WriteLine($"PostBack Debug - txtEmpName exists: {txtEmpName != null}");
+
+                return;
+            }
+
+            // Initial load (not PostBack)
+            // Add this line to populate the sidebar user name
+            lblUserName.Text = User.Identity.Name;
+            lblTopUserName.Text = User.Identity.Name;
+            lblTopUserRole.Text = "Administrator";
+
+            // Debug: Log current user info
+            System.Diagnostics.Debug.WriteLine($"=== Page_Load (Initial) ===");
+            System.Diagnostics.Debug.WriteLine($"Current Windows ID: {User.Identity.Name}");
+            System.Diagnostics.Debug.WriteLine($"Token from URL: {accessToken}");
+
+            // Check if employee mode (via token)
+            // Check if employee mode (via token)
+            if (isEmployeeMode)
+            {
+                // Employee accessing via token
+                System.Diagnostics.Debug.WriteLine($"=== EMPLOYEE MODE ===");
+                System.Diagnostics.Debug.WriteLine($"Employee mode detected. Token: {accessToken}");
+                System.Diagnostics.Debug.WriteLine($"Current Windows ID: {User.Identity.Name}");
+
+                ValidateEmployeeAccess(accessToken);
+
+                // IMPORTANT: Return here if validation failed
+                if (!currentAgreementId.HasValue)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Validation failed. currentAgreementId is null.");
+
+                    // Try one more time to get from query string if available
                     if (Request.QueryString["id"] != null)
                     {
                         int agreementId;
                         if (int.TryParse(Request.QueryString["id"], out agreementId))
                         {
                             currentAgreementId = agreementId;
-
-                            // Load the agreement to check its status
-                            LoadAgreementStatus(agreementId);
-
-                            // Set modes based on status and query string
-                            if (isViewMode)
-                            {
-                                isEditMode = false;
-                            }
-                            else
-                            {
-                                // Only allow edit mode if status is Draft
-                                isEditMode = (currentStatus == "Draft");
-
-                                // If trying to edit a non-draft agreement, force view mode
-                                if (!isEditMode)
-                                {
-                                    isViewMode = true;
-                                    Response.Redirect($"Agreement.aspx?id={agreementId}&mode=view");
-                                    return;
-                                }
-                            }
+                            System.Diagnostics.Debug.WriteLine($"Got Agreement ID from query string: {currentAgreementId}");
                         }
+                    }
+
+                    if (!currentAgreementId.HasValue)
+                    {
+                        ShowError("Unable to validate your access. Please use the link from your email.");
+                        return;
                     }
                 }
 
-                // Auto-fill IT Staff (current user) - only for admin mode
-                if (!isEmployeeMode)
-                {
-                    txtITStaff.Text = User.Identity.Name;
-                }
+                System.Diagnostics.Debug.WriteLine($"Validation successful. Agreement ID: {currentAgreementId.Value}");
 
-                // Load hardware models from database
-                LoadHardwareModels();
+                // CRITICAL: Store in multiple places for PostBack reliability
+                // 1. ViewState
+                ViewState["CurrentAgreementId"] = currentAgreementId;
+                ViewState["CurrentStatus"] = currentStatus;
+                ViewState["IsEmployeeMode"] = isEmployeeMode;
+                ViewState["AccessToken"] = accessToken; // Store token too
 
-                // Load employee emails from database
-                LoadEmployeeEmails();
+                // 2. Hidden field (most reliable for PostBack)
+                hdnAgreementId.Value = currentAgreementId.Value.ToString();
 
-                // If edit/view mode OR employee mode, load existing data
-                if (currentAgreementId.HasValue)
-                {
-                    LoadExistingAgreement(currentAgreementId.Value);
-                }
+                // 3. Also register as client script variable for JavaScript
+                Page.ClientScript.RegisterHiddenField("hdnCurrentAgreementId", currentAgreementId.Value.ToString());
 
-                // Check accessories section visibility (only for admin)
-                if (!isEmployeeMode)
-                {
-                    CheckAndShowAccessoriesSection();
-                }
-
-                // Setup page based on mode
-                SetupPageMode();
-
-                // Hide messages initially
-                messageSuccess.Visible = false;
-                messageError.Visible = false;
+                System.Diagnostics.Debug.WriteLine($"Stored Agreement ID: {currentAgreementId.Value}");
+                System.Diagnostics.Debug.WriteLine($"hdnAgreementId.Value: {hdnAgreementId.Value}");
             }
+            else
+            {
+                // Admin mode - check if user is admin
+                if (Session["IsAdmin"] == null || !(bool)Session["IsAdmin"])
+                {
+                    Response.Redirect("Default.aspx");
+                    return;
+                }
+
+                // Check mode from query string
+                string mode = Request.QueryString["mode"];
+                isViewMode = (mode == "view");
+
+                // Check if editing/viewing existing agreement
+                if (Request.QueryString["id"] != null)
+                {
+                    int agreementId;
+                    if (int.TryParse(Request.QueryString["id"], out agreementId))
+                    {
+                        currentAgreementId = agreementId;
+
+                        // Load the agreement to check its status
+                        LoadAgreementStatus(agreementId);
+
+                        // Set modes based on status and query string
+                        if (isViewMode)
+                        {
+                            isEditMode = false;
+                        }
+                        else
+                        {
+                            // Only allow edit mode if status is Draft
+                            isEditMode = (currentStatus == "Draft");
+
+                            // If trying to edit a non-draft agreement, force view mode
+                            if (!isEditMode)
+                            {
+                                isViewMode = true;
+                                Response.Redirect($"Agreement.aspx?id={agreementId}&mode=view");
+                                return;
+                            }
+                        }
+
+                        // Store in ViewState for PostBack
+                        ViewState["CurrentAgreementId"] = currentAgreementId;
+                        ViewState["CurrentStatus"] = currentStatus;
+                        ViewState["IsViewMode"] = isViewMode;
+                        ViewState["IsEditMode"] = isEditMode;
+                    }
+                }
+            }
+
+            // Auto-fill IT Staff (current user) - only for admin mode
+            if (!isEmployeeMode)
+            {
+                txtITStaff.Text = User.Identity.Name;
+            }
+
+            // Load hardware models from database
+            LoadHardwareModels();
+
+            // Load employee emails from database
+            LoadEmployeeEmails();
+
+            // If edit/view mode OR employee mode, load existing data
+            if (currentAgreementId.HasValue)
+            {
+                LoadExistingAgreement(currentAgreementId.Value);
+            }
+
+            // Check accessories section visibility (only for admin)
+            if (!isEmployeeMode)
+            {
+                CheckAndShowAccessoriesSection();
+            }
+
+            // Setup page based on mode
+            SetupPageMode();
+
+            // Hide messages initially
+            messageSuccess.Visible = false;
+            messageError.Visible = false;
 
             // Always set accessories section visibility (only for admin)
             if (accessoriesSection != null && !isEmployeeMode)
@@ -252,6 +346,30 @@ namespace WindowsAuthDemo
                 // Employee Mode - Readonly for hardware details, editable for signature
                 SetFormReadOnly(true); // Make hardware details readonly
 
+                // CRITICAL: Explicitly enable employee fields
+                txtEmpName.Enabled = true;
+                txtEmpName.ReadOnly = false;
+                txtEmpPosition.Enabled = true;
+                txtEmpPosition.ReadOnly = false;
+                txtEmpDepartment.Enabled = true;
+                txtEmpDepartment.ReadOnly = false;
+                txtEmpId.Enabled = true;
+                txtEmpId.ReadOnly = true; // This should be readonly (auto-filled)
+                txtEmpSignatureDate.Enabled = true;
+                txtEmpSignatureDate.ReadOnly = true;
+
+                // Remove any readonly CSS classes and aspNetDisabled
+                txtEmpName.CssClass = "form-control";
+                txtEmpPosition.CssClass = "form-control";
+                txtEmpDepartment.CssClass = "form-control";
+                txtEmpId.CssClass = "form-control auto-fill";
+                txtEmpSignatureDate.CssClass = "form-control auto-fill";
+
+                // Remove any server-side disabled state
+                txtEmpName.Attributes.Remove("disabled");
+                txtEmpPosition.Attributes.Remove("disabled");
+                txtEmpDepartment.Attributes.Remove("disabled");
+
                 litPageTitle.Text = "Employee Agreement - Hardware Agreement System";
                 litHeaderTitle.Text = "Hardware Agreement - Employee Signature";
                 litHeaderDescription.Text = "Please review and sign the hardware agreement";
@@ -288,14 +406,17 @@ namespace WindowsAuthDemo
                 // Enable employee signature section
                 EnableEmployeeSignatureSection();
 
-                // Auto-fill employee Windows ID
-                string userName = User.Identity.Name;
-                if (userName.Contains("\\"))
+                // Auto-fill employee Windows ID - ONLY ON INITIAL LOAD
+                if (!IsPostBack)
                 {
-                    userName = userName.Split('\\')[1];
+                    string userName = User.Identity.Name;
+                    if (userName.Contains("\\"))
+                    {
+                        userName = userName.Split('\\')[1];
+                    }
+                    txtEmpId.Text = userName;
+                    txtEmpSignatureDate.Text = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
                 }
-                txtEmpSignedBy.Text = userName;
-                txtEmpSignatureDate.Text = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
             }
             else if (isViewMode)
             {
@@ -628,6 +749,11 @@ namespace WindowsAuthDemo
             {
                 formContainer.Attributes["class"] = formContainer.Attributes["class"] + " view-mode";
             }
+            else
+            {
+                // Remove view-mode class
+                formContainer.Attributes["class"] = formContainer.Attributes["class"].Replace("view-mode", "").Trim();
+            }
 
             // Find controls if they're not accessible directly
             TextBox txtRemarksControl = (TextBox)FindControl("txtRemarks");
@@ -642,7 +768,7 @@ namespace WindowsAuthDemo
             if (txtOtherAccessoriesControl != null) txtOtherAccessoriesControl.ReadOnly = readOnly;
             if (txtOtherModelControl != null) txtOtherModelControl.ReadOnly = readOnly;
 
-            // Enable/disable dropdowns and other controls
+            // Enable/disable dropdowns and other controls - BUT NOT EMPLOYEE FIELDS!
             ddlModel.Enabled = !readOnly;
             ddlDeviceType.Enabled = !readOnly;
             ddlEmployeeEmail.Enabled = !readOnly;
@@ -668,6 +794,19 @@ namespace WindowsAuthDemo
                 ddlDeviceType.CssClass += " readonly-control";
                 ddlEmployeeEmail.CssClass += " readonly-control";
                 ddlHODEmail.CssClass += " readonly-control";
+            }
+            else
+            {
+                // Remove readonly classes
+                if (txtSerialNumberControl != null) txtSerialNumberControl.CssClass = txtSerialNumberControl.CssClass.Replace("readonly-control", "").Trim();
+                if (txtAssetNumberControl != null) txtAssetNumberControl.CssClass = txtAssetNumberControl.CssClass.Replace("readonly-control", "").Trim();
+                if (txtOtherAccessoriesControl != null) txtOtherAccessoriesControl.CssClass = txtOtherAccessoriesControl.CssClass.Replace("readonly-control", "").Trim();
+                if (txtRemarksControl != null) txtRemarksControl.CssClass = txtRemarksControl.CssClass.Replace("readonly-control", "").Trim();
+                if (txtOtherModelControl != null) txtOtherModelControl.CssClass = txtOtherModelControl.CssClass.Replace("readonly-control", "").Trim();
+                ddlModel.CssClass = ddlModel.CssClass.Replace("readonly-control", "").Trim();
+                ddlDeviceType.CssClass = ddlDeviceType.CssClass.Replace("readonly-control", "").Trim();
+                ddlEmployeeEmail.CssClass = ddlEmployeeEmail.CssClass.Replace("readonly-control", "").Trim();
+                ddlHODEmail.CssClass = ddlHODEmail.CssClass.Replace("readonly-control", "").Trim();
             }
         }
 
@@ -952,15 +1091,13 @@ namespace WindowsAuthDemo
          has_carry_bag, has_power_adapter, has_mouse, mouse_type, 
          has_vga_converter, other_accessories, it_staff_win_id, 
          issue_date, remarks, agreement_status, submitted_date, created_date,
-         employee_email, hod_email, agreement_view_token, token_expiry_date,
-         signature_status, agreement_terms_accepted)
+         employee_email, hod_email, agreement_view_token, token_expiry_date)
         VALUES 
         (@agreementNumber, @modelId, @serialNumber, @assetNumber,
          @hasCarryBag, @hasPowerAdapter, @hasMouse, @mouseType,
          @hasVGAConverter, @otherAccessories, @itStaff,
          @issueDate, @remarks, @status, @submittedDate, GETDATE(),
-         @employeeEmail, @hodEmail, @agreementViewToken, @tokenExpiryDate,
-         'Pending', 0)";
+         @employeeEmail, @hodEmail, @agreementViewToken, @tokenExpiryDate)";
 
             using (SqlCommand command = new SqlCommand(query, connection))
             {
@@ -1435,26 +1572,22 @@ namespace WindowsAuthDemo
                 {
                     connection.Open();
 
-                    // Get current Windows ID
-                    string currentWinId = User.Identity.Name; // e.g., "PANCENTURY\Qayyim"
-                    string currentUsername = currentWinId;
+                    // Get current Windows ID for logging
+                    string currentWinId = User.Identity.Name;
+                    System.Diagnostics.Debug.WriteLine($"ValidateEmployeeAccess - Token: {token}");
+                    System.Diagnostics.Debug.WriteLine($"ValidateEmployeeAccess - Current User: {currentWinId}");
 
-                    // Extract username from domain\username format
-                    if (currentWinId.Contains("\\"))
-                    {
-                        currentUsername = currentWinId.Split('\\')[1];
-                    }
-
-                    // Now validate with proper query
-                    string query = @"
-                SELECT a.id, a.agreement_status, a.token_expiry_date, a.employee_email,
-                       u.win_id, u.email
+                    // FIRST: Get the agreement ID using the token
+                    string getIdQuery = @"
+                SELECT a.id, a.agreement_status, a.token_expiry_date, 
+                       a.employee_email, a.agreement_view_token,
+                       a.employee_name, a.employee_id, a.employee_position, a.employee_department
                 FROM hardware_agreements a
-                LEFT JOIN hardware_users u ON a.employee_email = u.email
                 WHERE a.agreement_view_token = @token 
-                AND (a.token_expiry_date IS NULL OR a.token_expiry_date > GETDATE())";
+                AND (a.token_expiry_date IS NULL OR a.token_expiry_date > GETDATE())
+                AND a.agreement_status IN ('Pending', 'Active')";
 
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    using (SqlCommand command = new SqlCommand(getIdQuery, connection))
                     {
                         command.Parameters.AddWithValue("@token", token);
                         using (SqlDataReader reader = command.ExecuteReader())
@@ -1463,54 +1596,100 @@ namespace WindowsAuthDemo
                             {
                                 int agreementId = Convert.ToInt32(reader["id"]);
                                 string status = reader["agreement_status"].ToString();
-                                string expectedWinId = SafeConvertToString(reader["win_id"]);
-                                string expectedUsername = expectedWinId;
+                                string employeeEmail = SafeConvertToString(reader["employee_email"]);
+                                string storedToken = SafeConvertToString(reader["agreement_view_token"]);
 
-                                // Extract username from expected Windows ID if it has domain
-                                if (expectedWinId.Contains("\\"))
+                                // Check if already signed
+                                string existingName = SafeConvertToString(reader["employee_name"]);
+                                string existingId = SafeConvertToString(reader["employee_id"]);
+                                string existingPosition = SafeConvertToString(reader["employee_position"]);
+                                string existingDepartment = SafeConvertToString(reader["employee_department"]);
+
+                                System.Diagnostics.Debug.WriteLine($"ValidateEmployeeAccess - Found Agreement ID: {agreementId}");
+                                System.Diagnostics.Debug.WriteLine($"ValidateEmployeeAccess - Status: {status}");
+                                System.Diagnostics.Debug.WriteLine($"ValidateEmployeeAccess - Existing Data - Name: '{existingName}', Position: '{existingPosition}', Dept: '{existingDepartment}'");
+
+                                // Double-check token match (extra security)
+                                if (storedToken != token)
                                 {
-                                    expectedUsername = expectedWinId.Split('\\')[1];
-                                }
-
-                                // Validate Windows ID matches (compare usernames only, case-insensitive)
-                                bool isAuthorized = false;
-
-                                if (!string.IsNullOrEmpty(expectedWinId))
-                                {
-                                    // Compare both formats:
-                                    // 1. Full Windows ID match (domain\username)
-                                    // 2. Username only match
-                                    isAuthorized = currentWinId.Equals(expectedWinId, StringComparison.OrdinalIgnoreCase) ||
-                                                  currentUsername.Equals(expectedUsername, StringComparison.OrdinalIgnoreCase) ||
-                                                  currentUsername.Equals(expectedWinId, StringComparison.OrdinalIgnoreCase); // In case win_id is already just username
-                                }
-
-                                if (!isAuthorized)
-                                {
-                                    ShowError($"Access Denied: This agreement link is only accessible by the assigned employee. Expected: {expectedWinId}, Current: {currentWinId}");
+                                    ShowError("Token mismatch. Please use the link provided in your email.");
                                     currentAgreementId = null;
                                     pnlEmployeeSignature.Visible = false;
                                     return;
                                 }
 
-                                // Windows ID matches, proceed with validation
+                                // Token is valid - set the agreement ID
                                 currentAgreementId = agreementId;
                                 currentStatus = status;
 
-                                // Check if already completed
-                                if (currentStatus == "Completed")
+                                System.Diagnostics.Debug.WriteLine($"ValidateEmployeeAccess - SUCCESS! Agreement ID set to: {currentAgreementId}");
+
+                                // Check if already completed (check signature data too)
+                                if (currentStatus == "Completed" || !string.IsNullOrEmpty(existingName))
                                 {
                                     ShowError("This agreement has already been completed and signed.");
                                     DisableEmployeeForm();
                                     pnlEmployeeSignature.Visible = true;
                                     return;
                                 }
-
-                                // Valid employee access
                             }
                             else
                             {
-                                ShowError("Invalid or expired access token.");
+                                // No matching record - provide detailed error
+                                System.Diagnostics.Debug.WriteLine($"ValidateEmployeeAccess - No matching agreement found for token");
+                                reader.Close();
+
+                                // Check why it failed
+                                string debugQuery = @"
+                            SELECT id, agreement_status, token_expiry_date, agreement_view_token,
+                                   employee_name, employee_id
+                            FROM hardware_agreements 
+                            WHERE agreement_view_token = @debugToken";
+
+                                using (SqlCommand debugCmd = new SqlCommand(debugQuery, connection))
+                                {
+                                    debugCmd.Parameters.AddWithValue("@debugToken", token);
+                                    using (SqlDataReader debugReader = debugCmd.ExecuteReader())
+                                    {
+                                        if (debugReader.Read())
+                                        {
+                                            string debugStatus = debugReader["agreement_status"].ToString();
+                                            DateTime? expiryDate = debugReader["token_expiry_date"] != DBNull.Value
+                                                ? (DateTime?)Convert.ToDateTime(debugReader["token_expiry_date"])
+                                                : null;
+                                            string debugName = SafeConvertToString(debugReader["employee_name"]);
+                                            string debugEmployeeId = SafeConvertToString(debugReader["employee_id"]);
+
+                                            System.Diagnostics.Debug.WriteLine($"ValidateEmployeeAccess - Debug: Status={debugStatus}, Expiry={expiryDate}, Name='{debugName}', EmpID='{debugEmployeeId}'");
+
+                                            if (!string.IsNullOrEmpty(debugName) || !string.IsNullOrEmpty(debugEmployeeId))
+                                            {
+                                                ShowError("This agreement has already been completed and signed.");
+                                            }
+                                            else if (expiryDate.HasValue && expiryDate.Value < DateTime.Now)
+                                            {
+                                                ShowError("This access link has expired. Please contact IT support for a new link.");
+                                            }
+                                            else if (debugStatus == "Draft")
+                                            {
+                                                ShowError("This agreement has not been submitted yet. Please contact IT support.");
+                                            }
+                                            else if (debugStatus != "Pending" && debugStatus != "Active")
+                                            {
+                                                ShowError($"This agreement cannot be signed. Current status: {debugStatus}");
+                                            }
+                                            else
+                                            {
+                                                ShowError("Unable to access this agreement. Please contact IT support.");
+                                            }
+                                        }
+                                        else
+                                        {
+                                            ShowError("Invalid access token. The link may be incorrect or has been invalidated.");
+                                        }
+                                    }
+                                }
+
                                 currentAgreementId = null;
                                 pnlEmployeeSignature.Visible = false;
                             }
@@ -1519,6 +1698,7 @@ namespace WindowsAuthDemo
                 }
                 catch (Exception ex)
                 {
+                    System.Diagnostics.Debug.WriteLine($"ValidateEmployeeAccess - ERROR: {ex.Message}");
                     ShowError("Error validating access token: " + ex.Message);
                     currentAgreementId = null;
                     pnlEmployeeSignature.Visible = false;
@@ -1527,17 +1707,25 @@ namespace WindowsAuthDemo
         }
         private void EnableEmployeeSignatureSection()
         {
-            // No employee fields to enable anymore
-            // Just ensure the signature section is visible
-
-            // Auto-fill current user info
-            string userName = User.Identity.Name;
-            if (userName.Contains("\\"))
+            // Only auto-fill if fields are empty (to preserve user input on PostBack)
+            if (string.IsNullOrEmpty(txtEmpId.Text))
             {
-                userName = userName.Split('\\')[1];
+                string userName = User.Identity.Name;
+                string shortUserName = userName;
+                if (userName.Contains("\\"))
+                {
+                    shortUserName = userName.Split('\\')[1];
+                }
+
+                // Set the Employee ID (Windows ID) - readonly field
+                txtEmpId.Text = shortUserName;
             }
-            txtEmpSignedBy.Text = userName;
-            txtEmpSignatureDate.Text = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+
+            // Only set signature date if empty
+            if (string.IsNullOrEmpty(txtEmpSignatureDate.Text))
+            {
+                txtEmpSignatureDate.Text = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+            }
         }
 
         private void LoadEmployeeData(int agreementId)
@@ -1550,8 +1738,8 @@ namespace WindowsAuthDemo
                 {
                     connection.Open();
                     string query = @"
-                SELECT employee_signature_data,
-                       employee_signed_by, employee_signature_date
+                SELECT employee_name, employee_id, employee_position, employee_department,
+                       employee_signature_data, employee_signature_date
                 FROM hardware_agreements 
                 WHERE id = @id";
 
@@ -1562,6 +1750,31 @@ namespace WindowsAuthDemo
                         {
                             if (reader.Read())
                             {
+                                // Load employee info if exists
+                                string empName = SafeConvertToString(reader["employee_name"]);
+                                if (!string.IsNullOrEmpty(empName))
+                                {
+                                    txtEmpName.Text = empName;
+                                }
+
+                                string empId = SafeConvertToString(reader["employee_id"]);
+                                if (!string.IsNullOrEmpty(empId))
+                                {
+                                    txtEmpId.Text = empId;
+                                }
+
+                                string empPosition = SafeConvertToString(reader["employee_position"]);
+                                if (!string.IsNullOrEmpty(empPosition))
+                                {
+                                    txtEmpPosition.Text = empPosition;
+                                }
+
+                                string empDepartment = SafeConvertToString(reader["employee_department"]);
+                                if (!string.IsNullOrEmpty(empDepartment))
+                                {
+                                    txtEmpDepartment.Text = empDepartment;
+                                }
+
                                 // Load signature if exists
                                 string signatureData = SafeConvertToString(reader["employee_signature_data"]);
                                 if (!string.IsNullOrEmpty(signatureData))
@@ -1589,12 +1802,6 @@ namespace WindowsAuthDemo
                                 {
                                     txtEmpSignatureDate.Text = signatureDate.Value.ToString("dd/MM/yyyy HH:mm");
                                 }
-
-                                string signedBy = SafeConvertToString(reader["employee_signed_by"]);
-                                if (!string.IsNullOrEmpty(signedBy))
-                                {
-                                    txtEmpSignedBy.Text = signedBy;
-                                }
                             }
                         }
                     }
@@ -1608,16 +1815,77 @@ namespace WindowsAuthDemo
 
         protected void btnSubmitEmployee_Click(object sender, EventArgs e)
         {
+            System.Diagnostics.Debug.WriteLine("=== EMPLOYEE SUBMIT START ===");
+            System.Diagnostics.Debug.WriteLine($"Page.IsPostBack: {IsPostBack}");
+            System.Diagnostics.Debug.WriteLine($"Page.IsValid: {Page.IsValid}");
+            System.Diagnostics.Debug.WriteLine($"Employee Mode: {isEmployeeMode}");
+
+            // Check ALL field values
+            System.Diagnostics.Debug.WriteLine($"txtEmpName.Text: '{txtEmpName.Text}'");
+            System.Diagnostics.Debug.WriteLine($"txtEmpName.Text Length: {txtEmpName.Text.Length}");
+            System.Diagnostics.Debug.WriteLine($"txtEmpPosition.Text: '{txtEmpPosition.Text}'");
+            System.Diagnostics.Debug.WriteLine($"txtEmpDepartment.Text: '{txtEmpDepartment.Text}'");
+            System.Diagnostics.Debug.WriteLine($"txtEmpId.Text: '{txtEmpId.Text}'");
+            System.Diagnostics.Debug.WriteLine($"chkAgreeTerms.Checked: {chkAgreeTerms.Checked}");
+            System.Diagnostics.Debug.WriteLine($"hdnIsSigned.Value: '{hdnIsSigned.Value}'");
+            System.Diagnostics.Debug.WriteLine($"hdnSignatureData.Value Length: {(hdnSignatureData.Value?.Length ?? 0)}");
+
+            // Check if fields are enabled/readonly
+            System.Diagnostics.Debug.WriteLine($"txtEmpName.Enabled: {txtEmpName.Enabled}");
+            System.Diagnostics.Debug.WriteLine($"txtEmpName.ReadOnly: {txtEmpName.ReadOnly}");
+
             // Debug: Show current agreement ID
             if (!currentAgreementId.HasValue)
             {
-                ShowError($"No agreement selected. CurrentAgreementId is null. Token: {accessToken}");
+                // Try multiple ways to get the agreement ID
+                System.Diagnostics.Debug.WriteLine($"currentAgreementId is null, trying to recover...");
+
+                // 1. From hidden field
+                if (!string.IsNullOrEmpty(hdnAgreementId.Value))
+                {
+                    int parsedId;
+                    if (int.TryParse(hdnAgreementId.Value, out parsedId))
+                    {
+                        currentAgreementId = parsedId;
+                        System.Diagnostics.Debug.WriteLine($"Recovered from hdnAgreementId: {currentAgreementId}");
+                    }
+                }
+
+                // 2. From ViewState
+                if (!currentAgreementId.HasValue && ViewState["CurrentAgreementId"] != null)
+                {
+                    currentAgreementId = (int?)ViewState["CurrentAgreementId"];
+                    System.Diagnostics.Debug.WriteLine($"Recovered from ViewState: {currentAgreementId}");
+                }
+
+                if (!currentAgreementId.HasValue)
+                {
+                    ShowError($"No agreement selected. CurrentAgreementId is null. Token: {accessToken}");
+                    return;
+                }
+            }
+
+            System.Diagnostics.Debug.WriteLine($"Agreement ID: {currentAgreementId}");
+
+            // Validate employee name
+            if (string.IsNullOrWhiteSpace(txtEmpName.Text))
+            {
+                ShowError("Please enter your name.");
+                System.Diagnostics.Debug.WriteLine("ERROR: Employee name is empty!");
                 return;
             }
 
-            if (!Page.IsValid)
+            // Validate position
+            if (string.IsNullOrWhiteSpace(txtEmpPosition.Text))
             {
-                ShowError("Please fill in all required fields.");
+                ShowError("Please enter your position/job title.");
+                return;
+            }
+
+            // Validate department
+            if (string.IsNullOrWhiteSpace(txtEmpDepartment.Text))
+            {
+                ShowError("Please enter your department.");
                 return;
             }
 
@@ -1633,34 +1901,17 @@ namespace WindowsAuthDemo
                 return;
             }
 
+            System.Diagnostics.Debug.WriteLine("All validations passed. Proceeding to save...");
+
+            // Save to database
             SaveEmployeeAgreement();
+
+            System.Diagnostics.Debug.WriteLine("=== EMPLOYEE SUBMIT END ===");
         }
 
         private void SaveEmployeeAgreement()
         {
-            if (!Page.IsValid)
-            {
-                ShowError("Please fill in all required fields.");
-                return;
-            }
-
-            if (!chkAgreeTerms.Checked)
-            {
-                ShowError("You must agree to the terms and conditions.");
-                return;
-            }
-
-            if (hdnIsSigned.Value != "true" || string.IsNullOrEmpty(hdnSignatureData.Value))
-            {
-                ShowError("Please provide your signature.");
-                return;
-            }
-
-            if (!currentAgreementId.HasValue)
-            {
-                ShowError("No agreement selected.");
-                return;
-            }
+            System.Diagnostics.Debug.WriteLine($"=== SaveEmployeeAgreement() - ULTRA DEBUG VERSION ===");
 
             // Get Windows ID from current user
             string windowsId = User.Identity.Name;
@@ -1668,6 +1919,20 @@ namespace WindowsAuthDemo
             {
                 windowsId = windowsId.Split('\\')[1];
             }
+
+            System.Diagnostics.Debug.WriteLine($"WINDOWS ID: {windowsId}");
+            System.Diagnostics.Debug.WriteLine($"Employee Name from form: '{txtEmpName.Text}'");
+            System.Diagnostics.Debug.WriteLine($"Employee Position from form: '{txtEmpPosition.Text}'");
+            System.Diagnostics.Debug.WriteLine($"Employee Department from form: '{txtEmpDepartment.Text}'");
+            System.Diagnostics.Debug.WriteLine($"Signature Data exists: {!string.IsNullOrEmpty(hdnSignatureData.Value)}");
+
+            if (!currentAgreementId.HasValue)
+            {
+                ShowError("No agreement selected.");
+                return;
+            }
+
+            System.Diagnostics.Debug.WriteLine($"AGREEMENT ID: {currentAgreementId.Value}");
 
             string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["HardwareAgreementConnection"].ConnectionString;
 
@@ -1677,57 +1942,249 @@ namespace WindowsAuthDemo
                 {
                     connection.Open();
 
-                    // Update agreement with employee signature ONLY
-                    // No employee name, ID, position, or department needed
-                    string query = @"
+                    // ========== STEP 1: DIRECT SIMPLE TEST ==========
+                    System.Diagnostics.Debug.WriteLine($"\n=== STEP 1: DIRECT SIMPLE TEST ===");
+
+                    string simpleTestQuery = @"
+                UPDATE hardware_agreements 
+                SET employee_name = 'DIRECT TEST NAME',
+                    employee_position = 'DIRECT TEST POSITION'
+                WHERE id = @id";
+
+                    using (SqlCommand simpleCmd = new SqlCommand(simpleTestQuery, connection))
+                    {
+                        simpleCmd.Parameters.AddWithValue("@id", currentAgreementId.Value);
+                        int simpleRows = simpleCmd.ExecuteNonQuery();
+                        System.Diagnostics.Debug.WriteLine($"Simple test UPDATE rows: {simpleRows}");
+
+                        // Check if it worked
+                        string checkSimpleQuery = "SELECT employee_name FROM hardware_agreements WHERE id = @id";
+                        using (SqlCommand checkSimpleCmd = new SqlCommand(checkSimpleQuery, connection))
+                        {
+                            checkSimpleCmd.Parameters.AddWithValue("@id", currentAgreementId.Value);
+                            object simpleResult = checkSimpleCmd.ExecuteScalar();
+                            System.Diagnostics.Debug.WriteLine($"After simple test - Employee Name: '{simpleResult}'");
+                        }
+                    }
+
+                    // ========== STEP 2: TEST WITH FORM VALUES ==========
+                    System.Diagnostics.Debug.WriteLine($"\n=== STEP 2: TEST WITH FORM VALUES ===");
+
+                    string formTestQuery = @"
+                UPDATE hardware_agreements 
+                SET employee_name = @testName,
+                    employee_id = @testId,
+                    employee_position = @testPosition,
+                    employee_department = @testDepartment
+                WHERE id = @id";
+
+                    using (SqlCommand formTestCmd = new SqlCommand(formTestQuery, connection))
+                    {
+                        formTestCmd.Parameters.AddWithValue("@testName", "FORM TEST: " + txtEmpName.Text);
+                        formTestCmd.Parameters.AddWithValue("@testId", "FORMID-" + windowsId);
+                        formTestCmd.Parameters.AddWithValue("@testPosition", "FORM TEST: " + txtEmpPosition.Text);
+                        formTestCmd.Parameters.AddWithValue("@testDepartment", "FORM TEST: " + txtEmpDepartment.Text);
+                        formTestCmd.Parameters.AddWithValue("@id", currentAgreementId.Value);
+
+                        int formTestRows = formTestCmd.ExecuteNonQuery();
+                        System.Diagnostics.Debug.WriteLine($"Form test UPDATE rows: {formTestRows}");
+
+                        // Check results
+                        string checkFormQuery = @"
+                    SELECT employee_name, employee_id, employee_position, employee_department 
+                    FROM hardware_agreements WHERE id = @id";
+
+                        using (SqlCommand checkFormCmd = new SqlCommand(checkFormQuery, connection))
+                        {
+                            checkFormCmd.Parameters.AddWithValue("@id", currentAgreementId.Value);
+                            using (SqlDataReader reader = checkFormCmd.ExecuteReader())
+                            {
+                                if (reader.Read())
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"After form test:");
+                                    System.Diagnostics.Debug.WriteLine($"- Name: '{reader["employee_name"]}'");
+                                    System.Diagnostics.Debug.WriteLine($"- ID: '{reader["employee_id"]}'");
+                                    System.Diagnostics.Debug.WriteLine($"- Position: '{reader["employee_position"]}'");
+                                    System.Diagnostics.Debug.WriteLine($"- Department: '{reader["employee_department"]}'");
+                                }
+                            }
+                        }
+                    }
+
+                    // ========== STEP 3: FINAL FULL UPDATE ==========
+                    System.Diagnostics.Debug.WriteLine($"\n=== STEP 3: FINAL FULL UPDATE ===");
+
+                    // Clear any previous test data first
+                    string clearQuery = @"
+                UPDATE hardware_agreements 
+                SET employee_name = NULL,
+                    employee_id = NULL,
+                    employee_position = NULL,
+                    employee_department = NULL,
+                    employee_signature_data = NULL
+                WHERE id = @id";
+
+                    using (SqlCommand clearCmd = new SqlCommand(clearQuery, connection))
+                    {
+                        clearCmd.Parameters.AddWithValue("@id", currentAgreementId.Value);
+                        clearCmd.ExecuteNonQuery();
+                        System.Diagnostics.Debug.WriteLine("Cleared previous test data");
+                    }
+
+                    // Now do the real update
+                    string finalQuery = @"
                 UPDATE hardware_agreements SET
+                employee_name = @employeeName,
+                employee_id = @employeeId,
+                employee_position = @employeePosition,
+                employee_department = @employeeDepartment,
                 employee_signature_data = @signatureData,
                 employee_signature_date = GETDATE(),
-                employee_signed_by = @signedBy,
                 agreement_status = 'Completed',
-                agreement_completed_date = GETDATE(),
-                agreement_view_token = NULL, -- Invalidate token after completion
+                last_updated = GETDATE(),
+                agreement_view_token = NULL,
                 token_expiry_date = NULL
                 WHERE id = @id";
 
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    using (SqlCommand finalCmd = new SqlCommand(finalQuery, connection))
                     {
-                        command.Parameters.AddWithValue("@signatureData", hdnSignatureData.Value);
-                        command.Parameters.AddWithValue("@signedBy", windowsId);
-                        command.Parameters.AddWithValue("@id", currentAgreementId.Value);
+                        // Set parameters ONE BY ONE with debugging
+                        System.Diagnostics.Debug.WriteLine($"Setting parameters:");
 
-                        int rowsAffected = command.ExecuteNonQuery();
+                        var nameParam = finalCmd.Parameters.Add("@employeeName", SqlDbType.NVarChar, 255);
+                        nameParam.Value = txtEmpName.Text.Trim();
+                        System.Diagnostics.Debug.WriteLine($"- @employeeName: '{nameParam.Value}'");
 
-                        if (rowsAffected > 0)
+                        var idParam = finalCmd.Parameters.Add("@employeeId", SqlDbType.NVarChar, 50);
+                        idParam.Value = windowsId;
+                        System.Diagnostics.Debug.WriteLine($"- @employeeId: '{idParam.Value}'");
+
+                        var positionParam = finalCmd.Parameters.Add("@employeePosition", SqlDbType.NVarChar, 255);
+                        positionParam.Value = txtEmpPosition.Text.Trim();
+                        System.Diagnostics.Debug.WriteLine($"- @employeePosition: '{positionParam.Value}'");
+
+                        var deptParam = finalCmd.Parameters.Add("@employeeDepartment", SqlDbType.NVarChar, 255);
+                        deptParam.Value = txtEmpDepartment.Text.Trim();
+                        System.Diagnostics.Debug.WriteLine($"- @employeeDepartment: '{deptParam.Value}'");
+
+                        var sigParam = finalCmd.Parameters.Add("@signatureData", SqlDbType.NVarChar, -1);
+                        sigParam.Value = hdnSignatureData.Value;
+                        System.Diagnostics.Debug.WriteLine($"- @signatureData: [Data length: {hdnSignatureData.Value.Length}]");
+
+                        var idParam2 = finalCmd.Parameters.Add("@id", SqlDbType.Int);
+                        idParam2.Value = currentAgreementId.Value;
+                        System.Diagnostics.Debug.WriteLine($"- @id: {idParam2.Value}");
+
+                        using (SqlTransaction transaction = connection.BeginTransaction())
                         {
-                            ShowSuccess("Agreement submitted successfully! Thank you for completing the form.");
-                            DisableEmployeeForm();
+                            try
+                            {
+                                finalCmd.Transaction = transaction;
 
-                            // Send confirmation email
-                            SendConfirmationEmail(windowsId);
+                                System.Diagnostics.Debug.WriteLine($"Executing FINAL UPDATE...");
+                                int finalRows = finalCmd.ExecuteNonQuery();
+                                System.Diagnostics.Debug.WriteLine($"FINAL UPDATE rows: {finalRows}");
 
-                            // Redirect after 3 seconds
-                            string script = "<script type='text/javascript'>" +
-                                            "setTimeout(function(){ window.close(); }, 3000);" +
-                                            "</script>";
-                            ClientScript.RegisterStartupScript(this.GetType(), "redirect", script);
-                        }
-                        else
-                        {
-                            ShowError("Failed to submit agreement. Please try again.");
+                                if (finalRows > 0)
+                                {
+                                    // IMMEDIATELY verify within same transaction
+                                    string verifyNowQuery = @"
+                                SELECT employee_name, employee_id, employee_position, employee_department,
+                                       agreement_status, agreement_view_token
+                                FROM hardware_agreements 
+                                WHERE id = @id";
+
+                                    using (SqlCommand verifyNowCmd = new SqlCommand(verifyNowQuery, connection))
+                                    {
+                                        verifyNowCmd.Transaction = transaction;
+                                        verifyNowCmd.Parameters.AddWithValue("@id", currentAgreementId.Value);
+
+                                        using (SqlDataReader reader = verifyNowCmd.ExecuteReader())
+                                        {
+                                            if (reader.Read())
+                                            {
+                                                string updatedName = reader["employee_name"] as string;
+                                                string updatedId = reader["employee_id"] as string;
+                                                string updatedPosition = reader["employee_position"] as string;
+                                                string updatedDepartment = reader["employee_department"] as string;
+                                                string updatedStatus = reader["agreement_status"] as string;
+                                                string updatedToken = reader["agreement_view_token"] as string;
+
+                                                System.Diagnostics.Debug.WriteLine($"\n=== IMMEDIATE VERIFICATION ===");
+                                                System.Diagnostics.Debug.WriteLine($"Name: '{updatedName}' (IsNull: {string.IsNullOrEmpty(updatedName)})");
+                                                System.Diagnostics.Debug.WriteLine($"ID: '{updatedId}'");
+                                                System.Diagnostics.Debug.WriteLine($"Position: '{updatedPosition}'");
+                                                System.Diagnostics.Debug.WriteLine($"Department: '{updatedDepartment}'");
+                                                System.Diagnostics.Debug.WriteLine($"Status: '{updatedStatus}'");
+                                                System.Diagnostics.Debug.WriteLine($"Token: '{updatedToken}'");
+
+                                                if (string.IsNullOrEmpty(updatedName))
+                                                {
+                                                    System.Diagnostics.Debug.WriteLine("ERROR: Name is still NULL!");
+                                                    transaction.Rollback();
+                                                    ShowError("UPDATE executed but employee_name is still NULL. Database issue detected.");
+                                                    return;
+                                                }
+                                                else
+                                                {
+                                                    transaction.Commit();
+                                                    System.Diagnostics.Debug.WriteLine("Transaction COMMITTED - Data saved successfully!");
+
+                                                    ShowSuccess("Agreement submitted successfully!");
+                                                    SendConfirmationEmail(windowsId);
+
+                                                    string script = "<script type='text/javascript'>" +
+                                                                    "alert('Agreement submitted successfully!');" +
+                                                                    "setTimeout(function() { window.location.reload(); }, 1000);" +
+                                                                    "</script>";
+                                                    ClientScript.RegisterStartupScript(this.GetType(), "refreshPage", script);
+                                                    return;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                System.Diagnostics.Debug.WriteLine("ERROR: Could not read verification data!");
+                                                transaction.Rollback();
+                                                ShowError("Verification failed - could not read updated data.");
+                                                return;
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    transaction.Rollback();
+                                    System.Diagnostics.Debug.WriteLine("No rows affected - transaction rolled back");
+                                    ShowError("No agreement found with that ID.");
+                                    return;
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                transaction.Rollback();
+                                System.Diagnostics.Debug.WriteLine($"Transaction ERROR: {ex.Message}");
+                                ShowError($"Database error: {ex.Message}");
+                                return;
+                            }
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    ShowError("Error saving agreement: " + ex.Message);
+                    System.Diagnostics.Debug.WriteLine($"General ERROR: {ex.Message}");
+                    ShowError($"Error: {ex.Message}");
                 }
             }
         }
 
         private void DisableEmployeeForm()
         {
-            // Only disable the checkboxes and buttons
+            // Disable employee info fields
+            txtEmpName.Enabled = false;
+            txtEmpPosition.Enabled = false;
+            txtEmpDepartment.Enabled = false;
+
+            // Disable checkboxes and buttons
             chkAgreeTerms.Enabled = false;
             btnSubmitEmployee.Enabled = false;
 
@@ -1757,8 +2214,14 @@ namespace WindowsAuthDemo
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
                     connection.Open();
+
+                    // UPDATED QUERY with COALESCE to handle NULL values
                     string query = @"
-                SELECT agreement_number, employee_email, hod_email, it_staff_win_id
+                SELECT agreement_number, employee_email, hod_email, it_staff_win_id,
+                       COALESCE(employee_name, '') as employee_name, 
+                       COALESCE(employee_position, '') as employee_position, 
+                       COALESCE(employee_department, '') as employee_department,
+                       employee_signature_date
                 FROM hardware_agreements WHERE id = @id";
 
                     using (SqlCommand command = new SqlCommand(query, connection))
@@ -1772,20 +2235,39 @@ namespace WindowsAuthDemo
                                 string employeeEmail = reader["employee_email"].ToString();
                                 string hodEmail = reader["hod_email"].ToString();
                                 string itStaff = reader["it_staff_win_id"].ToString();
+                                string employeeName = reader["employee_name"].ToString();
+                                string employeePosition = reader["employee_position"].ToString();
+                                string employeeDepartment = reader["employee_department"].ToString();
+                                DateTime? signatureDate = SafeConvertToDateTime(reader["employee_signature_date"]);
+
+                                System.Diagnostics.Debug.WriteLine($"Email Data - Name: '{employeeName}', Position: '{employeePosition}', Dept: '{employeeDepartment}'");
 
                                 // Create email message
                                 MailMessage mail = new MailMessage();
                                 mail.From = new MailAddress("hardware_agreement@pancentury.com", "Hardware Agreement System");
-                                mail.To.Add(employeeEmail);
-                                mail.CC.Add(hodEmail);
+
+                                if (!string.IsNullOrEmpty(employeeEmail))
+                                    mail.To.Add(employeeEmail);
+
+                                if (!string.IsNullOrEmpty(hodEmail))
+                                    mail.CC.Add(hodEmail);
 
                                 // Add IT staff email
                                 if (!string.IsNullOrEmpty(itStaff))
                                 {
-                                    mail.CC.Add(itStaff + "@pancentury.com");
+                                    string itStaffEmail = itStaff.Contains("@") ? itStaff : itStaff + "@pancentury.com";
+                                    if (itStaff.Contains("\\"))
+                                    {
+                                        itStaffEmail = itStaff.Split('\\')[1] + "@pancentury.com";
+                                    }
+                                    mail.CC.Add(itStaffEmail);
                                 }
 
                                 mail.Subject = $"Hardware Agreement {agreementNumber} - Completed";
+
+                                string signatureDateStr = signatureDate.HasValue
+                                    ? signatureDate.Value.ToString("dd/MM/yyyy HH:mm")
+                                    : DateTime.Now.ToString("dd/MM/yyyy HH:mm");
 
                                 string body = $@"<!DOCTYPE html>
 <html>
@@ -1795,23 +2277,35 @@ namespace WindowsAuthDemo
         .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
         .header {{ background-color: #10b981; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }}
         .content {{ background-color: #f9f9f9; padding: 20px; border-radius: 0 0 10px 10px; border: 1px solid #ddd; }}
+        .details-table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
+        .details-table th, .details-table td {{ padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }}
+        .details-table th {{ background-color: #f2f2f2; width: 40%; }}
         .footer {{ margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 12px; }}
     </style>
 </head>
 <body>
     <div class='container'>
         <div class='header'>
-            <h1>Agreement Completed</h1>
+            <h1><i class='fas fa-check-circle'></i> Agreement Completed</h1>
         </div>
         <div class='content'>
             <h2>Hardware Agreement {agreementNumber} has been signed</h2>
-            <p><strong>Signed By (Windows ID):</strong> {windowsId}</p>
-            <p><strong>Signed Date:</strong> {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}</p>
             
-            <p>The hardware agreement has been successfully completed and signed by the employee.</p>
+            <table class='details-table'>
+                <tr><th>Employee Name:</th><td>{employeeName}</td></tr>
+                <tr><th>Employee ID (Windows):</th><td>{windowsId}</td></tr>
+                <tr><th>Position:</th><td>{employeePosition}</td></tr>
+                <tr><th>Department:</th><td>{employeeDepartment}</td></tr>
+                <tr><th>Signed Date:</th><td>{signatureDateStr}</td></tr>
+            </table>
+            
+            <p style='color: #10b981; font-weight: bold;'>
+                <i class='fas fa-check'></i> The hardware agreement has been successfully completed and signed by the employee.
+            </p>
             
             <div class='footer'>
                 <p>This is an automated notification from the Hardware Agreement System.</p>
+                <p>Please do not reply to this email.</p>
             </div>
         </div>
     </div>
@@ -1824,6 +2318,12 @@ namespace WindowsAuthDemo
                                 // Send email
                                 SmtpClient smtpClient = new SmtpClient();
                                 smtpClient.Send(mail);
+
+                                System.Diagnostics.Debug.WriteLine($"Confirmation email sent to {employeeEmail}");
+                            }
+                            else
+                            {
+                                System.Diagnostics.Debug.WriteLine($"No agreement found with ID: {currentAgreementId.Value}");
                             }
                         }
                     }
@@ -1832,6 +2332,7 @@ namespace WindowsAuthDemo
             catch (Exception ex)
             {
                 // Don't show error to user - email failure shouldn't prevent form submission
+                System.Diagnostics.Debug.WriteLine("Confirmation email error: " + ex.Message);
             }
         }
 

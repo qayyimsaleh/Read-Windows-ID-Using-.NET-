@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Agreement.aspx.cs" Inherits="WindowsAuthDemo.Agreement" %>
+﻿﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Agreement.aspx.cs" Inherits="WindowsAuthDemo.Agreement" %>
 
 <!DOCTYPE html>
 <html>
@@ -607,6 +607,36 @@
             box-shadow: none;
         }
 
+        /* CRITICAL FIX: Override for employee signature fields */
+        /* These fields should always be editable in employee mode */
+        #<%= txtEmpName.ClientID %>,
+        #<%= txtEmpPosition.ClientID %>,
+        #<%= txtEmpDepartment.ClientID %> {
+            cursor: text !important;
+            opacity: 1 !important;
+            background-color: white !important;
+            border-color: var(--border-color) !important;
+            pointer-events: auto !important;
+        }
+
+        /* Also ensure they're not affected by view-mode */
+        .view-mode #<%= txtEmpName.ClientID %>,
+        .view-mode #<%= txtEmpPosition.ClientID %>,
+        .view-mode #<%= txtEmpDepartment.ClientID %> {
+            cursor: text !important;
+            opacity: 1 !important;
+            background-color: white !important;
+            border-color: var(--border-color) !important;
+            pointer-events: auto !important;
+        }
+
+        /* Remove the prohibition cursor */
+        #<%= txtEmpName.ClientID %>:not([readonly]):not([disabled]),
+        #<%= txtEmpPosition.ClientID %>:not([readonly]):not([disabled]),
+        #<%= txtEmpDepartment.ClientID %>:not([readonly]):not([disabled]) {
+            cursor: text !important;
+        }
+
         /* Validation */
         .validation-error {
             color: var(--danger);
@@ -818,6 +848,11 @@
 </head>
 <body>
     <form id="form1" runat="server">
+        <!-- Hidden fields for backup -->
+        <asp:HiddenField ID="hdnEmpNameBackup" runat="server" />
+        <asp:HiddenField ID="hdnEmpPositionBackup" runat="server" />
+        <asp:HiddenField ID="hdnEmpDepartmentBackup" runat="server" />
+        
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
@@ -1234,7 +1269,60 @@
                             </div>
                             <div>
                                 <div class="section-title">Employee Agreement & Signature</div>
-                                <div class="section-subtitle">Review and sign the hardware agreement</div>
+                                <div class="section-subtitle">Fill in your details, review and sign the hardware agreement</div>
+                            </div>
+                        </div>
+
+                        <!-- Employee Information Section -->
+                        <div class="employee-details-section" style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #bfdbfe;">
+                            <h4 style="color: var(--primary); margin-bottom: 15px;">
+                                <i class="fas fa-user-circle" style="margin-right: 8px;"></i>Employee Information
+                            </h4>
+                            <div class="employee-info-grid">
+                                <div class="form-group">
+                                    <label class="form-label required">Employee Name</label>
+                                    <asp:TextBox ID="txtEmpName" runat="server" CssClass="form-control" 
+                                        placeholder="Enter your full name"></asp:TextBox>
+                                    <asp:RequiredFieldValidator ID="rfvEmpName" runat="server" 
+                                        ControlToValidate="txtEmpName"
+                                        ErrorMessage="Employee name is required"
+                                        Display="Dynamic" ForeColor="#ef4444"
+                                        ValidationGroup="EmployeeValidation">
+                                    </asp:RequiredFieldValidator>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Employee ID (Windows ID)</label>
+                                    <asp:TextBox ID="txtEmpId" runat="server" CssClass="form-control" 
+                                        ReadOnly="true" style="background-color: #f1f5f9;"></asp:TextBox>
+                                    <small style="color: var(--text-secondary); font-size: 0.8rem;">
+                                        <i class="fas fa-info-circle"></i> Automatically captured from your Windows login
+                                    </small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label required">Position / Job Title</label>
+                                    <asp:TextBox ID="txtEmpPosition" runat="server" CssClass="form-control" 
+                                        placeholder="Enter your job title"></asp:TextBox>
+                                    <asp:RequiredFieldValidator ID="rfvEmpPosition" runat="server" 
+                                        ControlToValidate="txtEmpPosition"
+                                        ErrorMessage="Position is required"
+                                        Display="Dynamic" ForeColor="#ef4444"
+                                        ValidationGroup="EmployeeValidation">
+                                    </asp:RequiredFieldValidator>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label required">Department</label>
+                                    <asp:TextBox ID="txtEmpDepartment" runat="server" CssClass="form-control" 
+                                        placeholder="Enter your department"></asp:TextBox>
+                                    <asp:RequiredFieldValidator ID="rfvEmpDepartment" runat="server" 
+                                        ControlToValidate="txtEmpDepartment"
+                                        ErrorMessage="Department is required"
+                                        Display="Dynamic" ForeColor="#ef4444"
+                                        ValidationGroup="EmployeeValidation">
+                                    </asp:RequiredFieldValidator>
+                                </div>
                             </div>
                         </div>
 
@@ -1282,18 +1370,13 @@
                                 <!-- Hidden fields for signature -->
                                 <asp:HiddenField ID="hdnSignatureData" runat="server" />
                                 <asp:HiddenField ID="hdnIsSigned" runat="server" Value="false" />
+                                <asp:HiddenField ID="hdnAgreementId" runat="server" Value="" />
             
-                                <!-- Keep only the signature date and signed by fields -->
+                                <!-- Signature date and signed by fields (auto-filled) -->
                                 <div class="employee-info-grid" style="margin-top: 20px;">
                                     <div class="form-group">
                                         <label class="form-label">Signature Date</label>
                                         <asp:TextBox ID="txtEmpSignatureDate" runat="server" CssClass="form-control" 
-                                            ReadOnly="true"></asp:TextBox>
-                                    </div>
-                
-                                    <div class="form-group">
-                                        <label class="form-label">Signed By (Windows ID)</label>
-                                        <asp:TextBox ID="txtEmpSignedBy" runat="server" CssClass="form-control" 
                                             ReadOnly="true"></asp:TextBox>
                                     </div>
                                 </div>
@@ -1330,7 +1413,8 @@
                     <asp:Button ID="btnDelete" runat="server" Text="Delete" 
                         CssClass="btn btn-danger" OnClick="btnDelete_Click" Visible="false" />
                     <asp:Button ID="btnSubmitEmployee" runat="server" Text="Submit Employee Agreement" 
-                        CssClass="btn btn-primary" OnClick="btnSubmitEmployee_Click" Visible="false" />
+                        CssClass="btn btn-primary" OnClick="btnSubmitEmployee_Click" Visible="false" 
+                        CausesValidation="true" ValidationGroup="EmployeeValidation" />
                 </div>
             </div>
 
@@ -1537,27 +1621,126 @@
                 }
             }
             
-            // Auto-fill employee signature fields
-            const userName = '<%= Page.User.Identity.Name %>';
-            if (userName && userName !== '') {
-                const signedByField = document.getElementById('<%= txtEmpSignedBy.ClientID %>');
-                const signatureDateField = document.getElementById('<%= txtEmpSignatureDate.ClientID %>');
+            // CRITICAL FIX: Remove view-mode class from employee fields
+            setTimeout(function() {
+                const empName = document.getElementById('<%= txtEmpName.ClientID %>');
+                const empPosition = document.getElementById('<%= txtEmpPosition.ClientID %>');
+                const empDepartment = document.getElementById('<%= txtEmpDepartment.ClientID %>');
+                
+                if (empName) {
+                    empName.classList.remove('readonly-control');
+                    empName.style.cursor = 'text';
+                    empName.readOnly = false;
+                    empName.disabled = false;
+                    empName.style.pointerEvents = 'auto';
+                }
+                if (empPosition) {
+                    empPosition.classList.remove('readonly-control');
+                    empPosition.style.cursor = 'text';
+                    empPosition.readOnly = false;
+                    empPosition.disabled = false;
+                    empPosition.style.pointerEvents = 'auto';
+                }
+                if (empDepartment) {
+                    empDepartment.classList.remove('readonly-control');
+                    empDepartment.style.cursor = 'text';
+                    empDepartment.readOnly = false;
+                    empDepartment.disabled = false;
+                    empDepartment.style.pointerEvents = 'auto';
+                }
+                
+                const isEmployeeMode = window.location.href.includes('token=');
 
-                if (signedByField && !signedByField.value) {
-                    // Extract username from domain\username format
-                    const parts = userName.split('\\');
-                    if (parts.length > 1) {
-                        signedByField.value = parts[1];
-                    } else {
-                        signedByField.value = userName;
+                if (isEmployeeMode) {
+                    const formContainer = document.getElementById('<%= formContainer.ClientID %>');
+                    if (formContainer) {
+                        formContainer.classList.remove('view-mode');
                     }
                 }
-
-                if (signatureDateField && !signatureDateField.value) {
-                    const now = new Date();
-                    signatureDateField.value = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB');
-                }
+            }, 100);
+            
+            // Backup employee field values before PostBack
+            const btnSubmitEmployee = document.getElementById('<%= btnSubmitEmployee.ClientID %>');
+            if (btnSubmitEmployee) {
+                btnSubmitEmployee.addEventListener('click', function(e) {
+                    // Backup values to hidden fields
+                    const empName = document.getElementById('<%= txtEmpName.ClientID %>').value;
+                    const empPosition = document.getElementById('<%= txtEmpPosition.ClientID %>').value;
+                    const empDepartment = document.getElementById('<%= txtEmpDepartment.ClientID %>').value;
+                    
+                    document.getElementById('<%= hdnEmpNameBackup.ClientID %>').value = empName;
+                    document.getElementById('<%= hdnEmpPositionBackup.ClientID %>').value = empPosition;
+                    document.getElementById('<%= hdnEmpDepartmentBackup.ClientID %>').value = empDepartment;
+                    
+                    console.log('Backup values:', {
+                        name: empName,
+                        position: empPosition,
+                        department: empDepartment
+                    });
+                });
             }
+            
+            // Restore values on page load if they were backed up AND fix field states
+            window.addEventListener('load', function() {
+                const backupName = document.getElementById('<%= hdnEmpNameBackup.ClientID %>').value;
+                const backupPosition = document.getElementById('<%= hdnEmpPositionBackup.ClientID %>').value;
+                const backupDepartment = document.getElementById('<%= hdnEmpDepartmentBackup.ClientID %>').value;
+    
+                if (backupName) {
+                    document.getElementById('<%= txtEmpName.ClientID %>').value = backupName;
+                }
+                if (backupPosition) {
+                    document.getElementById('<%= txtEmpPosition.ClientID %>').value = backupPosition;
+                }
+                if (backupDepartment) {
+                    document.getElementById('<%= txtEmpDepartment.ClientID %>').value = backupDepartment;
+                }
+    
+                // Only run if we're in employee mode (check URL for token)
+                const isEmployeeMode = window.location.href.includes('token=');
+    
+                if (isEmployeeMode) {
+                    // Safely check field status
+                    const empNameField = document.getElementById('<%= txtEmpName.ClientID %>');
+                    if (empNameField) {
+                        console.log('Employee Name field status:');
+                        console.log('- disabled:', empNameField.disabled);
+                        console.log('- readonly:', empNameField.readOnly);
+                        console.log('- class:', empNameField.className);
+            
+                        // Ensure field is not disabled
+                        if (empNameField.disabled) {
+                            empNameField.disabled = false;
+                            empNameField.readOnly = false;
+                            empNameField.classList.remove('aspNetDisabled');
+                            empNameField.classList.add('form-control');
+                        }
+                    }
+        
+                    // Also fix other employee fields
+                    const empPositionField = document.getElementById('<%= txtEmpPosition.ClientID %>');
+                    if (empPositionField && empPositionField.disabled) {
+                        empPositionField.disabled = false;
+                        empPositionField.readOnly = false;
+                        empPositionField.classList.remove('aspNetDisabled');
+                        empPositionField.classList.add('form-control');
+                    }
+        
+                    const empDepartmentField = document.getElementById('<%= txtEmpDepartment.ClientID %>');
+                    if (empDepartmentField && empDepartmentField.disabled) {
+                        empDepartmentField.disabled = false;
+                        empDepartmentField.readOnly = false;
+                        empDepartmentField.classList.remove('aspNetDisabled');
+                        empDepartmentField.classList.add('form-control');
+                    }
+        
+                    // Remove view-mode class from form container
+                    const formContainer = document.getElementById('<%= formContainer.ClientID %>');
+                    if (formContainer && formContainer.classList.contains('view-mode')) {
+                        formContainer.classList.remove('view-mode');
+                    }
+                }
+            });
         });
     </script>
 </body>
