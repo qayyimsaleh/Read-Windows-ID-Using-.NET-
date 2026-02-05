@@ -38,14 +38,43 @@ namespace WindowsAuthDemo
             set { ViewState["TotalRecords"] = value; }
         }
 
+        // NEW: Property to track if current user is admin
+        protected bool IsAdmin
+        {
+            get
+            {
+                object obj = ViewState["IsAdmin"];
+                return (obj == null) ? false : (bool)obj;
+            }
+            set { ViewState["IsAdmin"] = value; }
+        }
+
+        // NEW: Property to store current user's email
+        protected string CurrentUserEmail
+        {
+            get
+            {
+                object obj = ViewState["CurrentUserEmail"];
+                return (obj == null) ? "" : (string)obj;
+            }
+            set { ViewState["CurrentUserEmail"] = value; }
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
             {
-                // Check if user is admin
-                if (Session["IsAdmin"] == null || !(bool)Session["IsAdmin"])
+                // Get current user info from database
+                string currentWinId = User.Identity.Name;
+
+                // Check user role and get email
+                CheckUserRoleAndEmail(currentWinId);
+
+                // If user is not found in the system at all, redirect
+                if (string.IsNullOrEmpty(CurrentUserEmail))
                 {
                     Response.Redirect("Default.aspx");
+                    return;
                 }
 
                 // Populate sidebar user info
@@ -55,6 +84,59 @@ namespace WindowsAuthDemo
                 CurrentPage = 1;
                 LoadStatistics();
                 LoadAgreements();
+
+                // NEW: Adjust UI based on user role
+                SetupUIForUserRole();
+            }
+        }
+
+        // NEW: Check user role and get email from database
+        private void CheckUserRoleAndEmail(string winId)
+        {
+            string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["HardwareAgreementConnection"].ConnectionString;
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+                    string query = "SELECT admin, email FROM hardware_users WHERE win_id = @winId AND active = 1";
+
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@winId", winId);
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                IsAdmin = Convert.ToBoolean(reader["admin"]);
+                                CurrentUserEmail = reader["email"].ToString();
+
+                                // Also update Session for compatibility with other pages
+                                Session["IsAdmin"] = IsAdmin;
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Error checking user role: " + ex.Message);
+                }
+            }
+        }
+
+        // NEW: Setup UI elements based on user role
+        private void SetupUIForUserRole()
+        {
+            if (!IsAdmin)
+            {
+                // Hide certain admin-only elements if needed
+                // For example, hide the "Create New" button for normal users
+                // You can customize this based on your requirements
+
+                // Update page title or header to indicate "My Agreements"
+                // If you have a page title label, update it here
+                // Example: lblPageTitle.Text = "My Agreements";
             }
         }
 
@@ -68,37 +150,63 @@ namespace WindowsAuthDemo
                 {
                     connection.Open();
 
+                    // Build WHERE clause based on user role
+                    string userFilter = "";
+                    if (!IsAdmin)
+                    {
+                        userFilter = " WHERE employee_email = @userEmail";
+                    }
+
                     // Total agreements
-                    string totalQuery = "SELECT COUNT(*) FROM hardware_agreements";
+                    string totalQuery = "SELECT COUNT(*) FROM hardware_agreements" + userFilter;
                     using (SqlCommand totalCmd = new SqlCommand(totalQuery, connection))
                     {
+                        if (!IsAdmin)
+                        {
+                            totalCmd.Parameters.AddWithValue("@userEmail", CurrentUserEmail);
+                        }
                         litTotal.Text = Convert.ToInt32(totalCmd.ExecuteScalar()).ToString();
                     }
 
                     // Drafts
-                    string draftsQuery = "SELECT COUNT(*) FROM hardware_agreements WHERE agreement_status = 'Draft'";
+                    string draftsQuery = "SELECT COUNT(*) FROM hardware_agreements WHERE agreement_status = 'Draft'" +
+                                        (IsAdmin ? "" : " AND employee_email = @userEmail");
                     using (SqlCommand draftsCmd = new SqlCommand(draftsQuery, connection))
                     {
+                        if (!IsAdmin)
+                        {
+                            draftsCmd.Parameters.AddWithValue("@userEmail", CurrentUserEmail);
+                        }
                         litDrafts.Text = Convert.ToInt32(draftsCmd.ExecuteScalar()).ToString();
                     }
 
                     // Pending
-                    string pendingQuery = "SELECT COUNT(*) FROM hardware_agreements WHERE agreement_status = 'Pending'";
+                    string pendingQuery = "SELECT COUNT(*) FROM hardware_agreements WHERE agreement_status = 'Pending'" +
+                                         (IsAdmin ? "" : " AND employee_email = @userEmail");
                     using (SqlCommand pendingCmd = new SqlCommand(pendingQuery, connection))
                     {
+                        if (!IsAdmin)
+                        {
+                            pendingCmd.Parameters.AddWithValue("@userEmail", CurrentUserEmail);
+                        }
                         litPending.Text = Convert.ToInt32(pendingCmd.ExecuteScalar()).ToString();
                     }
 
-                    // Active
-                    string activeQuery = "SELECT COUNT(*) FROM hardware_agreements WHERE agreement_status = 'Active'";
+                    // Active (or Completed)
+                    string activeQuery = "SELECT COUNT(*) FROM hardware_agreements WHERE agreement_status IN ('Active', 'Completed')" +
+                                        (IsAdmin ? "" : " AND employee_email = @userEmail");
                     using (SqlCommand activeCmd = new SqlCommand(activeQuery, connection))
                     {
+                        if (!IsAdmin)
+                        {
+                            activeCmd.Parameters.AddWithValue("@userEmail", CurrentUserEmail);
+                        }
                         litActive.Text = Convert.ToInt32(activeCmd.ExecuteScalar()).ToString();
                     }
                 }
                 catch (Exception ex)
                 {
-                    // Log error
+                    System.Diagnostics.Debug.WriteLine("Error loading statistics: " + ex.Message);
                 }
             }
         }
@@ -150,7 +258,7 @@ namespace WindowsAuthDemo
                 }
                 catch (Exception ex)
                 {
-                    // Log error
+                    System.Diagnostics.Debug.WriteLine("Error loading agreements: " + ex.Message);
                 }
             }
         }
@@ -164,6 +272,12 @@ namespace WindowsAuthDemo
             FROM hardware_agreements a
             LEFT JOIN hardware_model m ON a.model_id = m.id
             WHERE 1=1";
+
+            // NEW: Add user filter for non-admin users
+            if (!IsAdmin)
+            {
+                query += " AND a.employee_email = @userEmail";
+            }
 
             // Add status filter
             if (!string.IsNullOrEmpty(ddlStatusFilter.SelectedValue))
@@ -185,6 +299,12 @@ namespace WindowsAuthDemo
 
         private void AddFilterParameters(SqlCommand command)
         {
+            // NEW: Add user email parameter for non-admin users
+            if (!IsAdmin)
+            {
+                command.Parameters.AddWithValue("@userEmail", CurrentUserEmail);
+            }
+
             if (!string.IsNullOrEmpty(ddlStatusFilter.SelectedValue))
             {
                 command.Parameters.AddWithValue("@status", ddlStatusFilter.SelectedValue);
@@ -240,14 +360,14 @@ namespace WindowsAuthDemo
             {
                 int agreementId = Convert.ToInt32(e.CommandArgument);
 
-                // Always check status before redirecting to edit
-                if (IsAgreementDraft(agreementId))
+                // Only allow edit for admins and only for Draft status
+                if (IsAdmin && IsAgreementDraft(agreementId))
                 {
                     Response.Redirect($"Agreement.aspx?id={agreementId}");
                 }
                 else
                 {
-                    // Non-draft agreements go to view mode
+                    // Non-admin users or non-draft agreements go to view mode
                     Response.Redirect($"Agreement.aspx?id={agreementId}&mode=view");
                 }
             }
@@ -258,8 +378,12 @@ namespace WindowsAuthDemo
             }
             else if (e.CommandName == "DeleteAgreement")
             {
-                int agreementId = Convert.ToInt32(e.CommandArgument);
-                DeleteAgreement(agreementId);
+                // Only allow delete for admins
+                if (IsAdmin)
+                {
+                    int agreementId = Convert.ToInt32(e.CommandArgument);
+                    DeleteAgreement(agreementId);
+                }
             }
         }
 
@@ -290,6 +414,9 @@ namespace WindowsAuthDemo
 
         private void DeleteAgreement(int agreementId)
         {
+            // Only allow admins to delete
+            if (!IsAdmin) return;
+
             string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["HardwareAgreementConnection"].ConnectionString;
 
             using (SqlConnection connection = new SqlConnection(connectionString))
@@ -311,7 +438,7 @@ namespace WindowsAuthDemo
                 }
                 catch (Exception ex)
                 {
-                    // Log error
+                    System.Diagnostics.Debug.WriteLine("Error deleting agreement: " + ex.Message);
                 }
             }
         }
@@ -329,17 +456,21 @@ namespace WindowsAuthDemo
                 LinkButton btnView = (LinkButton)e.Row.FindControl("btnView");
                 LinkButton btnDelete = (LinkButton)e.Row.FindControl("btnDelete");
 
-                // Only show Edit button for Draft status
+                // Only show Edit button for Draft status AND only for admins
                 if (btnEdit != null)
                 {
-                    btnEdit.Visible = (status == "Draft");
+                    btnEdit.Visible = IsAdmin && (status == "Draft");
                 }
 
-                // Show View button for all statuses (already visible by default)
+                // Show View button for all users and statuses
 
-                // Show Delete button for all statuses (already visible by default)
+                // Only show Delete button for admins
+                if (btnDelete != null)
+                {
+                    btnDelete.Visible = IsAdmin;
+                }
 
-                // Optional: Change button colors based on status
+                // Optional: Change row colors based on status
                 if (status == "Draft")
                 {
                     e.Row.CssClass = "draft-row";
@@ -356,8 +487,13 @@ namespace WindowsAuthDemo
                 {
                     e.Row.CssClass = "inactive-row";
                 }
+                else if (status == "Completed")
+                {
+                    e.Row.CssClass = "completed-row";
+                }
             }
         }
+
         protected void ddlStatusFilter_SelectedIndexChanged(object sender, EventArgs e)
         {
             CurrentPage = 1;
@@ -389,6 +525,7 @@ namespace WindowsAuthDemo
                 ClientScript.RegisterStartupScript(this.GetType(), "ScrollToTop", script);
             }
         }
+
         public string GetPageCssClass(object dataItem)
         {
             if (dataItem is DataRowView rowView)

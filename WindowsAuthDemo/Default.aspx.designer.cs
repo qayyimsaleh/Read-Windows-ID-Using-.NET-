@@ -7,13 +7,11 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace WindowsAuthDemo
-{
-
-
-    public partial class Default
-    {
-
+namespace WindowsAuthDemo {
+    
+    
+    public partial class Default {
+        
         /// <summary>
         /// form1 control.
         /// </summary>
@@ -22,7 +20,7 @@ namespace WindowsAuthDemo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
-
+        
         /// <summary>
         /// lblUserRoleSidebar control.
         /// </summary>
@@ -31,7 +29,7 @@ namespace WindowsAuthDemo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblUserRoleSidebar;
-
+        
         /// <summary>
         /// lblUserSidebar control.
         /// </summary>
@@ -40,7 +38,7 @@ namespace WindowsAuthDemo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblUserSidebar;
-
+        
         /// <summary>
         /// lblUser control.
         /// </summary>
@@ -49,7 +47,7 @@ namespace WindowsAuthDemo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblUser;
-
+        
         /// <summary>
         /// lblUserName control.
         /// </summary>
@@ -58,7 +56,7 @@ namespace WindowsAuthDemo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblUserName;
-
+        
         /// <summary>
         /// litError control.
         /// </summary>
@@ -67,7 +65,7 @@ namespace WindowsAuthDemo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litError;
-
+        
         /// <summary>
         /// lblTotalUsers control.
         /// </summary>
@@ -76,7 +74,7 @@ namespace WindowsAuthDemo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblTotalUsers;
-
+        
         /// <summary>
         /// lblTotalAgreements control.
         /// </summary>
@@ -85,7 +83,7 @@ namespace WindowsAuthDemo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblTotalAgreements;
-
+        
         /// <summary>
         /// lblTotalDevices control.
         /// </summary>
@@ -94,7 +92,7 @@ namespace WindowsAuthDemo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblTotalDevices;
-
+        
         /// <summary>
         /// lblActiveAgreements control.
         /// </summary>

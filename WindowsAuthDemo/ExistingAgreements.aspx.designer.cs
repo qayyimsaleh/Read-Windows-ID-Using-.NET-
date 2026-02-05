@@ -7,13 +7,11 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace WindowsAuthDemo
-{
-
-
-    public partial class ExistingAgreements
-    {
-
+namespace WindowsAuthDemo {
+    
+    
+    public partial class ExistingAgreements {
+        
         /// <summary>
         /// form1 control.
         /// </summary>
@@ -22,7 +20,7 @@ namespace WindowsAuthDemo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
-
+        
         /// <summary>
         /// lblUserRole control.
         /// </summary>
@@ -31,7 +29,7 @@ namespace WindowsAuthDemo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblUserRole;
-
+        
         /// <summary>
         /// lblUserName control.
         /// </summary>
@@ -40,7 +38,25 @@ namespace WindowsAuthDemo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblUserName;
-
+        
+        /// <summary>
+        /// lblUser control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblUser;
+        
+        /// <summary>
+        /// lblStatus control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblStatus;
+        
         /// <summary>
         /// litTotal control.
         /// </summary>
@@ -49,7 +65,7 @@ namespace WindowsAuthDemo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litTotal;
-
+        
         /// <summary>
         /// litDrafts control.
         /// </summary>
@@ -58,7 +74,7 @@ namespace WindowsAuthDemo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litDrafts;
-
+        
         /// <summary>
         /// litPending control.
         /// </summary>
@@ -67,7 +83,7 @@ namespace WindowsAuthDemo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litPending;
-
+        
         /// <summary>
         /// litActive control.
         /// </summary>
@@ -76,7 +92,7 @@ namespace WindowsAuthDemo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litActive;
-
+        
         /// <summary>
         /// ddlStatusFilter control.
         /// </summary>
@@ -85,7 +101,7 @@ namespace WindowsAuthDemo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList ddlStatusFilter;
-
+        
         /// <summary>
         /// ddlSortBy control.
         /// </summary>
@@ -94,7 +110,7 @@ namespace WindowsAuthDemo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList ddlSortBy;
-
+        
         /// <summary>
         /// txtSearch control.
         /// </summary>
@@ -103,7 +119,7 @@ namespace WindowsAuthDemo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtSearch;
-
+        
         /// <summary>
         /// litShowingCount control.
         /// </summary>
@@ -112,7 +128,7 @@ namespace WindowsAuthDemo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litShowingCount;
-
+        
         /// <summary>
         /// litTotalCount control.
         /// </summary>
@@ -121,7 +137,7 @@ namespace WindowsAuthDemo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litTotalCount;
-
+        
         /// <summary>
         /// gvAgreements control.
         /// </summary>
@@ -130,7 +146,7 @@ namespace WindowsAuthDemo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.GridView gvAgreements;
-
+        
         /// <summary>
         /// rptPagination control.
         /// </summary>
