@@ -64,6 +64,7 @@ namespace WindowsAuthDemo
         {
             if (!IsPostBack)
             {
+
                 // Get current user info from database
                 string currentWinId = User.Identity.Name;
 
@@ -79,6 +80,11 @@ namespace WindowsAuthDemo
 
                 // Populate sidebar user info
                 lblUserName.Text = User.Identity.Name;
+
+                // Set header user-profile info (Windows ID and Access Role)
+                lblUser.Text = User.Identity.Name;
+                lblStatus.Text = IsAdmin ? "Administrator" : "Normal User";
+                lblUserRole.Text = IsAdmin ? "Administrator" : "Normal User";
 
                 // Initialize page
                 CurrentPage = 1;

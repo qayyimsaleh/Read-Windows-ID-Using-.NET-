@@ -231,7 +231,8 @@
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow-y: auto;
-            max-height: 100vh;
+            min-height: 100vh;
+            width: calc(100% - 280px)
         }
 
         /* Header */
@@ -240,13 +241,12 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 36px;
-            padding-bottom: 24px;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
             background: var(--card-bg);
             border-radius: 20px;
             padding: 24px 32px;
             box-shadow: var(--shadow-md);
             animation: slideDown 0.6s ease-out;
+            width: 100%;
         }
 
         @keyframes slideDown {
@@ -329,6 +329,7 @@
             grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
             gap: 32px;
             margin-bottom: 40px;
+            width: 100%;
         }
 
         .dashboard-card {
@@ -487,6 +488,7 @@
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 28px;
             margin: 40px 0;
+            width: 100%;
         }
 
         .stat-card {
@@ -839,6 +841,7 @@
             
             .dashboard-grid {
                 grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                width: 100%;
             }
             
             .admin-controls {
@@ -879,10 +882,12 @@
                 gap: 24px;
                 align-items: flex-start;
                 padding: 20px;
+                width: 100%;
             }
             
             .dashboard-grid {
                 grid-template-columns: 1fr;
+                width: 100%;
             }
             
             .admin-controls {
@@ -891,6 +896,7 @@
             
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
+                width: 100%;
             }
             
             .page-title h1 {
@@ -915,6 +921,7 @@
             
             .stats-grid {
                 grid-template-columns: 1fr;
+                width: 100%;
             }
             
             .card-icon {

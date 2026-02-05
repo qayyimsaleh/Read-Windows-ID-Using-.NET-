@@ -981,12 +981,12 @@
                 </div>
                 <div class="user-profile">
                     <i class="fas fa-user-circle"></i>
-                    <div>
-                        <div style="font-weight: 600;">
+                    <div class="user-profile-info">
+                        <div class="user-profile-name">
                             <asp:Label ID="lblUser" runat="server"></asp:Label>
                         </div>
-                        <div style="font-size: 0.85rem; color: var(--text-secondary);">
-                            <asp:Label ID="lblStatus" runat="server" Text="Active Session"></asp:Label>
+                        <div class="user-profile-status">
+                            <asp:Label ID="lblStatus" runat="server"></asp:Label>
                         </div>
                     </div>
                 </div>
