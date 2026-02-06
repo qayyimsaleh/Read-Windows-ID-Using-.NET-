@@ -57,7 +57,7 @@ namespace WindowsAuthDemo
                 try
                 {
                     connection.Open();
-                    string query = "SELECT admin FROM hardware_users WHERE win_id = @win_id";
+                    string query = "SELECT admin FROM hardware_users WHERE win_id = @win_id ORDER BY win_id DESC";
 
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
@@ -89,7 +89,7 @@ namespace WindowsAuthDemo
                     string query = @"SELECT win_id, email, active, admin 
                                    FROM hardware_users 
                                    WHERE (@search IS NULL OR win_id LIKE '%' + @search + '%' OR email LIKE '%' + @search + '%')
-                                   ORDER BY win_id";
+                                   ORDER BY win_id DESC";
 
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
@@ -259,7 +259,7 @@ namespace WindowsAuthDemo
                 try
                 {
                     connection.Open();
-                    string query = "SELECT win_id, email, active, admin FROM hardware_users WHERE win_id = @win_id";
+                    string query = "SELECT win_id, email, active, admin FROM hardware_users WHERE win_id = @win_id ORDER BY win_id DESC";
 
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
@@ -298,7 +298,7 @@ namespace WindowsAuthDemo
                 try
                 {
                     connection.Open();
-                    string query = "SELECT win_id, email, active, admin FROM hardware_users WHERE win_id = @win_id";
+                    string query = "SELECT win_id, email, active, admin FROM hardware_users WHERE win_id = @win_id ORDER BY win_id DESC";
 
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
