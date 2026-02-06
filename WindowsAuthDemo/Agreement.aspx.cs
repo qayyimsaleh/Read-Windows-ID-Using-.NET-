@@ -1009,7 +1009,7 @@ namespace WindowsAuthDemo
                 try
                 {
                     connection.Open();
-                    string query = "SELECT email, win_id FROM hardware_users WHERE active = 1 AND email IS NOT NULL ORDER BY win_id";
+                    string query = "SELECT email, win_id FROM hardware_users WHERE active = 1 AND email IS NOT NULL ORDER BY email ASC";
 
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
