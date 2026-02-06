@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html>
 <head runat="server">
-    <title>Hardware Agreement Portal</title>
+    <title>Laptop/PC Agreement Portal</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="hardware-portal-styles.css">
@@ -21,7 +21,7 @@
         <aside class="sidebar">
             <div class="sidebar-header">
                 <i class="fas fa-laptop-code"></i>
-                <h2>Hardware Portal</h2>
+                <h2>Laptop/PC Agreement Portal</h2>
             </div>
 
             <ul class="nav-links">
@@ -67,7 +67,7 @@
 
             <div class="nav-links">
                 <div class="nav-item">
-                    <a href="mailto:qayyim@ioioleo.com?subject=Hardware%20Agreement%20Portal%20Support&body=Hello%20Support%20Team,%0A%0AI%20need%20assistance%20with:%0A%0A%0A%0AWindows%20ID:%20[Your%20Windows%20ID]%0APage:%20[Current%20Page]" 
+                    <a href="mailto:qayyim@ioioleo.com?subject=Laptop/PC%20Agreement%20Portal%20Support&body=Hello%20Support%20Team,%0A%0AI%20need%20assistance%20with:%0A%0A%0A%0AWindows%20ID:%20[Your%20Windows%20ID]%0APage:%20[Current%20Page]" 
                        class="nav-link" 
                        onclick="return setEmailBody(this)">
                         <i class="fas fa-question-circle"></i>
@@ -104,8 +104,8 @@
             <!-- Header -->
             <header class="top-header">
                 <div class="page-title">
-                    <h1>Welcome to Hardware Agreement Portal</h1>
-                    <p>Manage your hardware agreements and user permissions</p>
+                    <h1>Welcome to Laptop/PC Agreement Portal</h1>
+                    <p>Manage your Laptop/PC agreements and user permissions</p>
                 </div>
                 <div class="user-profile">
                     <i class="fas fa-user-circle"></i>
@@ -232,7 +232,7 @@
                             <i class="fas fa-file-contract"></i>
                         </div>
                         <div class="control-title">Create New Agreement</div>
-                        <div class="control-desc">Generate new hardware agreements for employees</div>
+                        <div class="control-desc">Generate new Laptop/PC agreements for employees</div>
                     </a>
 
                     <a href="ExistingAgreements.aspx" class="admin-control">
@@ -240,7 +240,7 @@
                             <i class="fas fa-list-alt"></i>
                         </div>
                         <div class="control-title">View Existing Agreements</div>
-                        <div class="control-desc">Manage and review all hardware agreements</div>
+                        <div class="control-desc">Manage and review all Laptop/PC agreements</div>
                     </a>
 
                     <a href="UserManagement.aspx" class="admin-control">
@@ -279,15 +279,15 @@
                                 <i class="fas fa-file-contract"></i>
                             </div>
                             <div class="control-title">View Agreement</div>
-                            <div class="control-desc">Check your hardware agreement status</div>
+                            <div class="control-desc">Check your Laptop/PC agreement status</div>
                         </a>
 
-                        <a href="mailto:qayyim@ioioleo.com?subject=Hardware%20Agreement%20Support" class="admin-control">
+                        <a href="mailto:qayyim@ioioleo.com?subject=Laptop/PC%20Agreement%20Support" class="admin-control">
                             <div class="control-icon">
                                 <i class="fas fa-headset"></i>
                             </div>
                             <div class="control-title">Request Support</div>
-                            <div class="control-desc">Get help with hardware issues</div>
+                            <div class="control-desc">Get help with Laptop/PC issues</div>
                         </a>
 
                         <a href="#" class="admin-control">
@@ -303,14 +303,14 @@
                                 <i class="fas fa-history"></i>
                             </div>
                             <div class="control-title">View History</div>
-                            <div class="control-desc">Check your hardware request history</div>
+                            <div class="control-desc">Check your Laptop/PC request history</div>
                         </a>
                     </div>
                 </div>
             </div>
 
             <div class="footer">
-                <p>Hardware Agreement Portal &copy; <%= DateTime.Now.Year %> | Last updated: <%= DateTime.Now.ToString("MMMM dd, yyyy HH:mm:ss") %></p>
+                <p>Laptop/PC Agreement Portal &copy; <%= DateTime.Now.Year %> | Last updated: <%= DateTime.Now.ToString("MMMM dd, yyyy HH:mm:ss") %></p>
                 <p style="margin-top: 8px; font-size: 0.8rem; color: rgba(255, 255, 255, 0.8);">
                     Windows Authentication | Secure Enterprise Portal
                 </p>

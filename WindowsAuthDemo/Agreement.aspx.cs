@@ -496,7 +496,7 @@ namespace WindowsAuthDemo
                 SetFormReadOnly(false);
                 litPageTitle.Text = "Create New Agreement - Windows Auth Demo";
                 litHeaderTitle.Text = "Create New Hardware Agreement";
-                litHeaderDescription.Text = "Fill in the details for the new laptop/desktop agreement";
+                litHeaderDescription.Text = "Fill in the details for the new laptop/pc agreement";
 
                 btnSaveDraft.Text = "Save as Draft";
                 btnSubmit.Text = "Submit Agreement";

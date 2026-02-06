@@ -20,7 +20,7 @@
         <aside class="sidebar">
             <div class="sidebar-header">
                 <i class="fas fa-laptop-code"></i>
-                <h2>Hardware Portal</h2>
+                <h2>Laptop/PC Portal</h2>
             </div>
 
             <ul class="nav-links">
@@ -66,7 +66,7 @@
 
             <div class="nav-links">
                 <div class="nav-item">
-                    <a href="mailto:qayyim@ioioleo.com?subject=Hardware%20Agreement%20Portal%20Support&body=Hello%20Support%20Team,%0A%0AI%20need%20assistance%20with:%0A%0A%0A%0AWindows%20ID:%20[Your%20Windows%20ID]%0APage:%20[Current%20Page]" 
+                    <a href="mailto:qayyim@ioioleo.com?subject=Laptop_PC%20Agreement%20Portal%20Support&body=Hello%20Support%20Team,%0A%0AI%20need%20assistance%20with:%0A%0A%0A%0AWindows%20ID:%20[Your%20Windows%20ID]%0APage:%20[Current%20Page]" 
                        class="nav-link" 
                        onclick="return setEmailBody(this)">
                         <i class="fas fa-question-circle"></i>
@@ -186,8 +186,8 @@
                                 <i class="fas fa-laptop"></i>
                             </div>
                             <div>
-                                <div class="section-title">Hardware Details</div>
-                                <div class="section-subtitle">Enter laptop/desktop specifications</div>
+                                <div class="section-title">Laptop/PC Details</div>
+                                <div class="section-subtitle">Enter Laptop/PC specifications</div>
                             </div>
                         </div>
 
@@ -227,7 +227,7 @@
                                                 AutoPostBack="true" OnSelectedIndexChanged="ddlDeviceType_SelectedIndexChanged">
                                                 <asp:ListItem Value="">-- Select Type --</asp:ListItem>
                                                 <asp:ListItem Value="Laptop">Laptop</asp:ListItem>
-                                                <asp:ListItem Value="Desktop">Desktop</asp:ListItem>
+                                                <asp:ListItem Value="Desktop">PC</asp:ListItem>
                                                 <asp:ListItem Value="All-in-One">All-in-One PC</asp:ListItem>
                                                 <asp:ListItem Value="Workstation">Workstation</asp:ListItem>
                                                 <asp:ListItem Value="Tablet">Tablet</asp:ListItem>
@@ -432,7 +432,7 @@
                             </div>
                             <div>
                                 <div class="section-title">Employee Agreement & Signature</div>
-                                <div class="section-subtitle">Fill in your details, review and sign the hardware agreement</div>
+                                <div class="section-subtitle">Fill in your details, review and sign the Laptop/PC agreement</div>
                             </div>
                         </div>
 
@@ -490,7 +490,7 @@
                         </div>
 
                         <div class="agreement-terms">
-                            <h3 style="color: var(--primary); margin-bottom: 15px;">Hardware Usage Agreement</h3>
+                            <h3 style="color: var(--primary); margin-bottom: 15px;">Laptop/PC Usage Agreement</h3>
         
                             <!-- Agreement Terms Text -->
                             <div style="line-height: 1.6; margin-bottom: 20px;">
@@ -583,7 +583,7 @@
 
             <!-- Footer -->
             <div class="footer">
-                <p>Hardware Agreement System &copy; <%= DateTime.Now.Year %> | Secure Enterprise Portal</p>
+                <p>Laptop/PC Agreement System &copy; <%= DateTime.Now.Year %> | Secure Enterprise Portal</p>
                 <p style="margin-top: 8px; font-size: 0.8rem; color: #94a3b8;">
                     Windows Authentication | Last updated: <%= DateTime.Now.ToString("MMMM dd, yyyy HH:mm") %>
                 </p>

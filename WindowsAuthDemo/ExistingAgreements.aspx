@@ -21,7 +21,7 @@
         <aside class="sidebar">
             <div class="sidebar-header">
                 <i class="fas fa-laptop-code"></i>
-                <h2>Hardware Portal</h2>
+                <h2>Laptop/PC Portal</h2>
             </div>
 
             <ul class="nav-links">
@@ -67,7 +67,7 @@
 
             <div class="nav-links">
                 <div class="nav-item">
-                    <a href="mailto:qayyim@ioioleo.com?subject=Hardware%20Agreement%20Portal%20Support&body=Hello%20Support%20Team,%0A%0AI%20need%20assistance%20with:%0A%0A%0A%0AWindows%20ID:%20[Your%20Windows%20ID]%0APage:%20[Current%20Page]" 
+                    <a href="mailto:qayyim@ioioleo.com?subject=Laptop_PC%20Agreement%20Portal%20Support&body=Hello%20Support%20Team,%0A%0AI%20need%20assistance%20with:%0A%0A%0A%0AWindows%20ID:%20[Your%20Windows%20ID]%0APage:%20[Current%20Page]" 
                        class="nav-link" 
                        onclick="return setEmailBody(this)">
                         <i class="fas fa-question-circle"></i>
@@ -105,7 +105,7 @@
             <header class="top-header">
                 <div class="page-title">
                     <h1>Agreements Management</h1>
-                    <p>View, search, and manage all hardware agreements in the system</p>
+                    <p>View, search, and manage all Laptop/PC agreements in the system</p>
                 </div>
                 <div class="user-profile">
                     <i class="fas fa-user-circle"></i>
@@ -320,7 +320,7 @@
 
             <!-- Footer -->
             <div class="footer">
-                <p>Hardware Agreement Portal &copy; <%= DateTime.Now.Year %> | Last updated: <%= DateTime.Now.ToString("MMMM dd, yyyy HH:mm:ss") %></p>
+                <p>Laptop/PC Agreement Portal &copy; <%= DateTime.Now.Year %> | Last updated: <%= DateTime.Now.ToString("MMMM dd, yyyy HH:mm:ss") %></p>
                 <p style="margin-top: 8px; font-size: 0.8rem; color: rgba(255, 255, 255, 0.8);">
                     Windows Authentication | Secure Enterprise Portal
                 </p>

@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html>
 <head runat="server">
-    <title>User Management - Hardware Agreement Portal</title>
+    <title>User Management - Laptop/PC Agreement Portal</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="hardware-portal-styles.css">
@@ -21,7 +21,7 @@
         <aside class="sidebar">
             <div class="sidebar-header">
                 <i class="fas fa-laptop-code"></i>
-                <h2>Hardware Portal</h2>
+                <h2>Laptop/PC Portal</h2>
             </div>
 
             <ul class="nav-links">
@@ -67,7 +67,7 @@
 
             <div class="nav-links">
                 <div class="nav-item">
-                    <a href="mailto:qayyim@ioioleo.com?subject=Hardware%20Agreement%20Portal%20Support&body=Hello%20Support%20Team,%0A%0AI%20need%20assistance%20with:%0A%0A%0A%0AWindows%20ID:%20[Your%20Windows%20ID]%0APage:%20[Current%20Page]" 
+                    <a href="mailto:qayyim@ioioleo.com?subject=Laptop_PC%20Agreement%20Portal%20Support&body=Hello%20Support%20Team,%0A%0AI%20need%20assistance%20with:%0A%0A%0A%0AWindows%20ID:%20[Your%20Windows%20ID]%0APage:%20[Current%20Page]" 
                        class="nav-link" 
                        onclick="return setEmailBody(this)">
                         <i class="fas fa-question-circle"></i>

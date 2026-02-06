@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html>
 <head runat="server">
-    <title>Reports & Analytics - Hardware Agreement Portal</title>
+    <title>Reports & Analytics - Laptop/PC Agreement Portal</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="hardware-portal-styles.css">
@@ -22,7 +22,7 @@
         <aside class="sidebar">
             <div class="sidebar-header">
                 <i class="fas fa-laptop-code"></i>
-                <h2>Hardware Portal</h2>
+                <h2>Laptop/PC Portal</h2>
             </div>
 
             <ul class="nav-links">
@@ -68,7 +68,7 @@
 
             <div class="nav-links">
                 <div class="nav-item">
-                    <a href="mailto:qayyim@ioioleo.com?subject=Hardware%20Agreement%20Portal%20Support&body=Hello%20Support%20Team,%0A%0AI%20need%20assistance%20with:%0A%0A%0A%0AWindows%20ID:%20[Your%20Windows%20ID]%0APage:%20[Current%20Page]" 
+                    <a href="mailto:qayyim@ioioleo.com?subject=Laptop_PC%20Agreement%20Portal%20Support&body=Hello%20Support%20Team,%0A%0AI%20need%20assistance%20with:%0A%0A%0A%0AWindows%20ID:%20[Your%20Windows%20ID]%0APage:%20[Current%20Page]" 
                        class="nav-link" 
                        onclick="return setEmailBody(this)">
                         <i class="fas fa-question-circle"></i>
@@ -106,7 +106,7 @@
             <header class="top-header">
                 <div class="page-title">
                     <h1>Reports & Analytics</h1>
-                    <p>Comprehensive insights from hardware agreements data</p>
+                    <p>Comprehensive insights from Laptop/PC agreements data</p>
                 </div>
                 <div class="user-profile">
                     <i class="fas fa-user-circle"></i>
@@ -168,7 +168,7 @@
                         </div>
 
                         <div class="filter-group">
-                            <label class="filter-label">Hardware Type</label>
+                            <label class="filter-label">Laptop/PC Type</label>
                             <asp:DropDownList ID="ddlHardwareType" runat="server" CssClass="filter-control">
                                 <asp:ListItem Value="">All Types</asp:ListItem>
                                 <asp:ListItem Value="Laptop">Laptop</asp:ListItem>
@@ -269,7 +269,7 @@
 
                     <div class="chart-card">
                         <div class="chart-header">
-                            <div class="chart-title">Agreements by Hardware Type</div>
+                            <div class="chart-title">Agreements by Laptop/PC Type</div>
                             <div class="chart-period">All time</div>
                         </div>
                         <div class="chart-container">
@@ -302,7 +302,7 @@
                                 <Columns>
                                     <asp:BoundField DataField="agreement_number" HeaderText="Agreement No" />
                                     <asp:BoundField DataField="employee_name" HeaderText="Employee" />
-                                    <asp:BoundField DataField="model" HeaderText="Hardware Model" />
+                                    <asp:BoundField DataField="model" HeaderText="Laptop/PC Model" />
                                     <asp:BoundField DataField="issue_date" HeaderText="Issue Date" DataFormatString="{0:dd/MM/yyyy}" />
                                     <asp:TemplateField HeaderText="Status">
                                         <ItemTemplate>
@@ -374,13 +374,13 @@
                         <div class="insight-item">
                             <div class="insight-header">
                                 <i class="fas fa-laptop"></i>
-                                <h4>Popular Hardware</h4>
+                                <h4>Popular Laptop/PC</h4>
                             </div>
                             <p class="insight-text">
                                 <span class="insight-metric">Laptops</span> account for 
                                 <span class="insight-metric">
                                     <asp:Literal ID="litLaptopPercentage" runat="server" Text="0"></asp:Literal>%
-                                </span> of all hardware agreements.
+                                </span> of all Laptop/PC agreements.
                             </p>
                         </div>
 
@@ -414,7 +414,7 @@
             <div class="footer">
                 <p>Reports & Analytics &copy; <%= DateTime.Now.Year %> | Generated on: <%= DateTime.Now.ToString("MMMM dd, yyyy HH:mm:ss") %></p>
                 <p style="margin-top: 8px; font-size: 0.8rem; color: rgba(255, 255, 255, 0.8);">
-                    Data Source: Hardware Agreements Database | Last updated: Today
+                    Data Source: Laptop/PC Agreements Database | Last updated: Today
                 </p>
             </div>
         </main>
